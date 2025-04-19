@@ -28,20 +28,21 @@ export const DashboardUniversidades = () => {
         const data = snapshot.val();
         if (data) {
           const universidadesArray: Universidad[] = Object.entries(data).map(
-            ([id, uni]) => ({
-              ...uni,
-              id, // Añadimos el id de Firebase
+            ([id, uni]: [string, any]) => ({
+              ...(uni ?? {}), // asegurás que sea objeto
+              id,
             })
           );
-          dispatch(fetchUniversidades(universidadesArray));  // Actualiza el estado con los datos obtenidos
+          dispatch(fetchUniversidades(universidadesArray));
         } else {
-          dispatch(fetchUniversidades([]));  // Si no hay datos, vaciar la lista
+          dispatch(fetchUniversidades([]));
         }
       },
       (error) => {
         console.error("Error al obtener universidades:", error);
       }
     );
+    
 
     // Limpiar el listener cuando el componente se desmonta
     return () => unsubscribe();

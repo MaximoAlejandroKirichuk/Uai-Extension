@@ -12,7 +12,8 @@ export const ItemUniversidad = ({ uni, id, onDelete }: Props) => {
       <div className="flex justify-between items-start mb-2">
         <h2 className="text-xl font-semibold">{uni.nombre}</h2>
         <div className="flex gap-1">
-          <button onClick={() => onDelete(id)} title="Eliminar">
+          <button className="transition-transform duration-200 hover:scale-110 cursor-pointer"
+            onClick={() => onDelete(id)} title="Eliminar">
             🗑️
           </button>
         </div>
