@@ -1,10 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { userSlice } from './slices/user/userSlice'
 import universidadReducer from './slices/universidades/universidadesSlice';
+import crowfundingsReducer from './slices/crowfunding/crowfundingSlice';
+
 export const store = configureStore({
   reducer: {
     user: userSlice.reducer,
     universidades: universidadReducer,
+    crowfundings : crowfundingsReducer,
   },
 })
 
