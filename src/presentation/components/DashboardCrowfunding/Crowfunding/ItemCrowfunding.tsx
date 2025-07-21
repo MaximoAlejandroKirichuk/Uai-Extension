@@ -33,7 +33,9 @@ export const ItemCrowfunding = ({ crowfunding, id, onDelete }: Props) => {
       <p className="text-sm mb-1">
         <span className="font-bold">Facilidad de uso:</span> {crowfunding.facilidadUso}
       </p>
-
+      <p className="text-sm">
+        <span className="font-bold">Algoritmo:</span> {crowfunding.algoritmo}
+      </p>
       <p className="text-sm">
         <span className="font-bold">Comisiones:</span> {crowfunding.comisiones}
       </p>
