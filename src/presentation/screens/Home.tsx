@@ -10,6 +10,8 @@ import { DashboardCapitalVentures } from "../components/DashboardCapitalVentures
 import { ButtonAddCapitalVentures } from "../components/ButtonAddCV/ButtonAddCapitalVenture";
 import { DashboardPlataformas } from "../components/DashboardPlataformas/DashboardPlataformas";
 import { ButtonAddPlataformas } from "../components/ButtonAddPlataformas/ButtonAddPlataformas";
+import { DashboardOrganismos } from "../components/DashboardOrganismosEstados/DasboardOrganismosEstados";
+import { ButtonAddOrganismoEstado } from "../components/ButtonAddOrganismos/ButtonAddOrganismos";
 
 export const Home = () => {
   const [active, setActive] = useState("universidades");
@@ -51,6 +53,14 @@ export const Home = () => {
         >
           Plataformas
         </button>
+        <button
+          className={`px-4 py-2 rounded ${
+            active === "Organismos estados" ? "bg-blue-600 text-white" : "bg-white"
+          }`}
+          onClick={() => setActive("Organismos estados")}
+        >
+          Organismos estados
+        </button>
       </div>
 
       {/* Dashboards */}
@@ -77,6 +87,12 @@ export const Home = () => {
           <>
             <DashboardPlataformas />
             <ButtonAddPlataformas />
+          </>
+        )}
+        {active === "Organismos estados" && (
+          <>
+            <DashboardOrganismos />
+            <ButtonAddOrganismoEstado />
           </>
         )}
       </div>
