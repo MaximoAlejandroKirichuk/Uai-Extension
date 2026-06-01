@@ -1,16 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { RootState } from "../../../store/store";
-import { fetchCrowfundings } from  "../../../store/slices/crowfunding/crowfundingSlice"
+import { fetchCrowfundings } from "../../../store/slices/crowfunding/crowfundingSlice";
 import { Crowfunding } from "../../../core/entities/crowfunding.entity";
-import { useAppDispatch, useAppSelector } from "../../../hooks/hooks";
+import { useAppSelector } from "../../../hooks/hooks";
 import { LoadingComponent } from "../loading/LoadingComponent";
 import { ItemCrowfunding } from "./Crowfunding/ItemCrowfunding";
-import { ref, onValue, remove, DataSnapshot } from "firebase/database";
+import { remove, ref } from "firebase/database";
 import { database } from "../../../firebase/firebaseConfig";
+import { useRealtimeList } from "../../../hooks/useRealtimeList";
 
 export const DashboardCrowfunding = () => {
-  const dispatch = useAppDispatch();
-
   const { crowfundings, loading, error } = useAppSelector(
     (state: RootState) => state.crowfundings
   );
@@ -18,32 +17,11 @@ export const DashboardCrowfunding = () => {
   const [busqueda, setBusqueda] = useState<string>("");
 
 
-  useEffect(() => {
-    const crowfundingsRef = ref(database, "crowfundings");
-
-    const unsubscribe = onValue(
-      crowfundingsRef,
-      (snapshot: DataSnapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const crowfundingsArray: Crowfunding[] = Object.entries(data).map(
-            ([id, proyecto]: [string, any]) => ({
-              ...(proyecto ?? {}),
-              id,
-            })
-          );
-          dispatch(fetchCrowfundings(crowfundingsArray));
-        } else {
-          dispatch(fetchCrowfundings([]));
-        }
-      },
-      (error) => {
-        console.error("Error al obtener proyectos:", error);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [dispatch]);
+  useRealtimeList<Crowfunding>({
+    path: "crowfundings",
+    action: fetchCrowfundings,
+    errorLabel: "proyectos",
+  });
 
   const handleDelete = async (id: string) => {
     try {

@@ -1,47 +1,26 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { RootState } from "../../../store/store";
-import { fetchCapitalVentures } from "../../../store/slices/capitalVentures/capitalVentures"
+import { fetchCapitalVentures } from "../../../store/slices/capitalVentures/capitalVentures";
 import { CapitalVentures } from "../../../core/entities/capitalVentures.entity";
-import { useAppDispatch, useAppSelector } from "../../../hooks/hooks";
+import { useAppSelector } from "../../../hooks/hooks";
 import { LoadingComponent } from "../loading/LoadingComponent";
 import { ItemCapitalVenture } from "./CapitalVentures/ItemCapitalVentures";
-import { ref, onValue, remove, DataSnapshot } from "firebase/database";
+import { remove, ref } from "firebase/database";
 import { database } from "../../../firebase/firebaseConfig";
+import { useRealtimeList } from "../../../hooks/useRealtimeList";
 
 export const DashboardCapitalVentures = () => {
-  const dispatch = useAppDispatch();
   const { capitalVentures, loading, error } = useAppSelector(
     (state: RootState) => state.capitalVentures
   );
 
   const [busqueda, setBusqueda] = useState<string>("");
 
-  useEffect(() => {
-    const venturesRef = ref(database, "capitalVentures");
-
-    const unsubscribe = onValue(
-      venturesRef,
-      (snapshot: DataSnapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const venturesArray: CapitalVentures[] = Object.entries(data).map(
-            ([id, venture]: [string, any]) => ({
-              ...(venture ?? {}),
-              id,
-            })
-          );
-          dispatch(fetchCapitalVentures(venturesArray));
-        } else {
-          dispatch(fetchCapitalVentures([]));
-        }
-      },
-      (error) => {
-        console.error("Error al obtener capital ventures:", error);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [dispatch]);
+  useRealtimeList<CapitalVentures>({
+    path: "capitalVentures",
+    action: fetchCapitalVentures,
+    errorLabel: "capital ventures",
+  });
 
   const handleDelete = async (id: string) => {
     try {

@@ -1,47 +1,26 @@
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks/hooks";
+import { useState } from "react";
+import { useAppSelector } from "../../../hooks/hooks";
 import { RootState } from "../../../store/store";
 import { fetchPlataformas } from "../../../store/slices/plataforma/plataforma";
 import { Plataforma } from "../../../core/entities/plataformas.entity";
-import { ref, onValue, remove, DataSnapshot } from "firebase/database";
+import { remove, ref } from "firebase/database";
 import { database } from "../../../firebase/firebaseConfig";
 import { ItemPlataforma } from "./Plataformas/ItemPlataforma";
 import { LoadingComponent } from "../loading/LoadingComponent";
+import { useRealtimeList } from "../../../hooks/useRealtimeList";
 
 export const DashboardPlataformas = () => {
-  const dispatch = useAppDispatch();
   const { plataformas, loading, error } = useAppSelector(
     (state: RootState) => state.plataformas
   );
 
   const [busqueda, setBusqueda] = useState("");
 
-  useEffect(() => {
-    const plataformasRef = ref(database, "plataformas");
-
-    const unsubscribe = onValue(
-      plataformasRef,
-      (snapshot: DataSnapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const plataformasArray: Plataforma[] = Object.entries(data).map(
-            ([id, value]: [string, any]) => ({
-              ...(value ?? {}),
-              id,
-            })
-          );
-          dispatch(fetchPlataformas(plataformasArray));
-        } else {
-          dispatch(fetchPlataformas([]));
-        }
-      },
-      (error) => {
-        console.error("Error al obtener plataformas:", error);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [dispatch]);
+  useRealtimeList<Plataforma>({
+    path: "plataformas",
+    action: fetchPlataformas,
+    errorLabel: "plataformas",
+  });
 
   const handleDelete = async (id: string) => {
     try {

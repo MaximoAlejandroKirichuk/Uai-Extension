@@ -1,16 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { RootState } from "../../../store/store";
 import { fetchUniversidades } from "../../../store/slices/universidades/universidadesSlice";
 import { Universidad } from "../../../core/entities/universidad.entity";
-import { useAppDispatch, useAppSelector } from "../../../hooks/hooks";
+import { useAppSelector } from "../../../hooks/hooks";
 import { LoadingComponent } from "../loading/LoadingComponent";
 import { ItemUniversidad } from "./Universidades/ItemUniversidad";
-import { ref, onValue, remove, DataSnapshot } from "firebase/database";
+import { remove, ref } from "firebase/database";
 import { database } from "../../../firebase/firebaseConfig";
+import { useRealtimeList } from "../../../hooks/useRealtimeList";
 
 export const DashboardUniversidades = () => {
-  const dispatch = useAppDispatch();
-
   const { universidades, loading, error } = useAppSelector(
     (state: RootState) => state.universidades
   );
@@ -18,35 +17,11 @@ export const DashboardUniversidades = () => {
   const [busqueda, setBusqueda] = useState<string>("");
   const [filtroRed, setFiltroRed] = useState<string>("");
 
-  useEffect(() => {
-    const universidadesRef = ref(database, "universidades");
-
-    // Listener en tiempo real de las universidades
-    const unsubscribe = onValue(
-      universidadesRef,
-      (snapshot: DataSnapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const universidadesArray: Universidad[] = Object.entries(data).map(
-            ([id, uni]: [string, any]) => ({
-              ...(uni ?? {}), // asegurás que sea objeto
-              id,
-            })
-          );
-          dispatch(fetchUniversidades(universidadesArray));
-        } else {
-          dispatch(fetchUniversidades([]));
-        }
-      },
-      (error) => {
-        console.error("Error al obtener universidades:", error);
-      }
-    );
-    
-
-    // Limpiar el listener cuando el componente se desmonta
-    return () => unsubscribe();
-  }, [dispatch]);
+  useRealtimeList<Universidad>({
+    path: "universidades",
+    action: fetchUniversidades,
+    errorLabel: "universidades",
+  });
 
   const handleDelete = async (id: string) => {
     try {

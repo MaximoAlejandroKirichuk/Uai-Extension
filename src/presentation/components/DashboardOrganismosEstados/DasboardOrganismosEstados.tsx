@@ -1,47 +1,26 @@
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks/hooks";
+import { useState } from "react";
+import { useAppSelector } from "../../../hooks/hooks";
 import { RootState } from "../../../store/store";
 import { fetchOrganismos } from "../../../store/slices/organismosEstados/organismosEstados";
 import { OrganismoEstado } from "../../../core/entities/organismosEstado.entity";
-import { ref, onValue, remove, DataSnapshot } from "firebase/database";
+import { remove, ref } from "firebase/database";
 import { database } from "../../../firebase/firebaseConfig";
 import { ItemOrganismosEstados } from "./OrganismosEstados/ItemOrganismosEstados";
 import { LoadingComponent } from "../loading/LoadingComponent";
+import { useRealtimeList } from "../../../hooks/useRealtimeList";
 
 export const DashboardOrganismos = () => {
-  const dispatch = useAppDispatch();
   const { organismos, loading, error } = useAppSelector(
     (state: RootState) => state.organismos
   );
 
   const [busqueda, setBusqueda] = useState("");
 
-  useEffect(() => {
-    const organismosRef = ref(database, "organismosEstado");
-
-    const unsubscribe = onValue(
-      organismosRef,
-      (snapshot: DataSnapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const organismosArray: OrganismoEstado[] = Object.entries(data).map(
-            ([id, value]: [string, any]) => ({
-              ...(value ?? {}),
-              id,
-            })
-          );
-          dispatch(fetchOrganismos(organismosArray));
-        } else {
-          dispatch(fetchOrganismos([]));
-        }
-      },
-      (error) => {
-        console.error("Error al obtener organismos:", error);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [dispatch]);
+  useRealtimeList<OrganismoEstado>({
+    path: "organismosEstado",
+    action: fetchOrganismos,
+    errorLabel: "organismos",
+  });
 
   const handleDelete = async (id: string) => {
     try {
