@@ -1,3 +1,3 @@
-export interface EventoEndeavor {
-  id?: string;
-}
+import type { BaseEntity } from "./base.entity";
+
+export interface EventoEndeavor extends BaseEntity {}
