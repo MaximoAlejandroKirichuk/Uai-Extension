@@ -2,10 +2,11 @@ import { useState } from "react";
 import { database, ref, push } from "../../../firebase/firebaseConfig";
 import "../ButtonAdd/ButtonAdd.css";
 import { Plataforma } from "../../../core/entities/plataformas.entity";
+import { useModalForm } from "../../../hooks/useModalForm";
+import { ModalForm } from "../ModalForm/ModalForm";
 
 export const ButtonAddPlataformas = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { isOpen, message, setMessage, open, close } = useModalForm();
 
   const [formData, setFormData] = useState<Plataforma>({
     nombrePlataforma: "",
@@ -19,11 +20,6 @@ export const ButtonAddPlataformas = () => {
     costoComision: "",
     algoritmo: "",
   });
-
-  const toggleModal = () => {
-    setIsOpen(!isOpen);
-    setMessage(null);
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -50,7 +46,7 @@ export const ButtonAddPlataformas = () => {
         costoComision: "",
         algoritmo: "",
       });
-      setIsOpen(false);
+      close({ clearMessage: false });
       setMessage({ type: "success", text: "¡Plataforma guardada con éxito!" });
 
       setTimeout(() => setMessage(null), 3000);
@@ -62,43 +58,96 @@ export const ButtonAddPlataformas = () => {
 
   return (
     <>
-      <button className="floating-button" onClick={toggleModal}>
+      <button className="floating-button" onClick={open}>
         +
       </button>
-
-      {isOpen && (
-        <div className="modal-overlay" onClick={toggleModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2 className="mb-5 text-center">Agregar nueva Plataforma</h2>
-
-            {message && (
-              <div className={`feedback-message ${message.type}`}>
-                {message.text}
-              </div>
-            )}
-
-            {/* Scroll interno */}
-            <div className="form-scroll-container">
-              <form onSubmit={handleSubmit}>
-                <input type="text" name="nombrePlataforma" placeholder="Nombre de la plataforma" value={formData.nombrePlataforma} onChange={handleChange} required />
-                <textarea name="descripcion" placeholder="Descripción" value={formData.descripcion} onChange={handleChange} required />
-                <input type="text" name="contacto" placeholder="Contacto (opcional)" value={formData.contacto} onChange={handleChange} />
-                <input type="text" name="tipoPlataforma" placeholder="Tipo de plataforma" value={formData.tipoPlataforma} onChange={handleChange} required />
-                <input type="text" name="industria" placeholder="Industria" value={formData.industria} onChange={handleChange} required />
-                <input type="text" name="etapaCubre" placeholder="Etapa que cubre" value={formData.etapaCubre} onChange={handleChange} required />
-                <input type="text" name="montoPromedio" placeholder="Monto promedio" value={formData.montoPromedio} onChange={handleChange} required />
-                <input type="text" name="requisitosAcceso" placeholder="Requisitos de acceso" value={formData.requisitosAcceso} onChange={handleChange} required />
-                <input type="text" name="costoComision" placeholder="Costo/Comisión" value={formData.costoComision} onChange={handleChange} required />
-                <input type="text" name="algoritmo" placeholder="Algoritmo" value={formData.algoritmo} onChange={handleChange} required />
-
-                <button type="submit" className="modal-submit">Guardar</button>
-              </form>
-            </div>
-
-            <button onClick={toggleModal} className="close-button">Cerrar</button>
-          </div>
-        </div>
-      )}
+      <ModalForm
+        title="Agregar nueva Plataforma"
+        isOpen={isOpen}
+        message={message}
+        onClose={close}
+        onSubmit={handleSubmit}
+        scroll
+      >
+        <input
+          type="text"
+          name="nombrePlataforma"
+          placeholder="Nombre de la plataforma"
+          value={formData.nombrePlataforma}
+          onChange={handleChange}
+          required
+        />
+        <textarea
+          name="descripcion"
+          placeholder="Descripción"
+          value={formData.descripcion}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="contacto"
+          placeholder="Contacto (opcional)"
+          value={formData.contacto}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="tipoPlataforma"
+          placeholder="Tipo de plataforma"
+          value={formData.tipoPlataforma}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="industria"
+          placeholder="Industria"
+          value={formData.industria}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="etapaCubre"
+          placeholder="Etapa que cubre"
+          value={formData.etapaCubre}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="montoPromedio"
+          placeholder="Monto promedio"
+          value={formData.montoPromedio}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="requisitosAcceso"
+          placeholder="Requisitos de acceso"
+          value={formData.requisitosAcceso}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="costoComision"
+          placeholder="Costo/Comisión"
+          value={formData.costoComision}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="algoritmo"
+          placeholder="Algoritmo"
+          value={formData.algoritmo}
+          onChange={handleChange}
+          required
+        />
+      </ModalForm>
     </>
   );
 };

@@ -2,10 +2,11 @@ import { useState } from "react";
 import { database, ref, push } from "../../../firebase/firebaseConfig";
 import "../ButtonAdd/ButtonAdd.css";
 import { CapitalVentures } from "../../../core/entities/capitalVentures.entity";
+import { useModalForm } from "../../../hooks/useModalForm";
+import { ModalForm } from "../ModalForm/ModalForm";
 
 export const ButtonAddCapitalVentures = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { isOpen, message, setMessage, open, close } = useModalForm();
 
   const [formData, setFormData] = useState<CapitalVentures>({
     nombre: "",
@@ -21,11 +22,6 @@ export const ButtonAddCapitalVentures = () => {
     comentario: "",
     algoritmo: "",
   });
-
-  const toggleModal = () => {
-    setIsOpen(!isOpen);
-    setMessage(null);
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -54,7 +50,7 @@ export const ButtonAddCapitalVentures = () => {
         comentario: "",
         algoritmo: "",
       });
-      setIsOpen(false);
+      close({ clearMessage: false });
       setMessage({ type: "success", text: "¡Capital Venture guardado con éxito!" });
 
       setTimeout(() => setMessage(null), 3000);
@@ -66,45 +62,112 @@ export const ButtonAddCapitalVentures = () => {
 
   return (
     <>
-      <button className="floating-button" onClick={toggleModal}>
+      <button className="floating-button" onClick={open}>
         +
       </button>
-
-      {isOpen && (
-        <div className="modal-overlay" onClick={toggleModal}>
-  <div className="modal" onClick={(e) => e.stopPropagation()}>
-    <h2 className="mb-5 text-center">Agregar nuevo Capital Venture</h2>
-
-    {message && (
-      <div className={`feedback-message ${message.type}`}>
-        {message.text}
-      </div>
-    )}
-
-    {/* CONTENEDOR CON SCROLL */}
-    <div className="form-scroll-container">
-      <form onSubmit={handleSubmit}>
-        <input type="text" name="nombre" placeholder="Nombre" value={formData.nombre} onChange={handleChange} required />
-        <input type="text" name="sitioWeb" placeholder="Sitio Web" value={formData.sitioWeb} onChange={handleChange} required />
-        <input type="text" name="contacto" placeholder="Contacto (opcional)" value={formData.contacto} onChange={handleChange} />
-        <input type="text" name="region" placeholder="Región" value={formData.region} onChange={handleChange} required />
-        <input type="text" name="tipoInversion" placeholder="Tipo de inversión" value={formData.tipoInversion} onChange={handleChange} required />
-        <input type="text" name="foco" placeholder="Foco" value={formData.foco} onChange={handleChange} required />
-        <input type="text" name="etapa" placeholder="Etapa" value={formData.etapa} onChange={handleChange} required />
-        <input type="text" name="montoPromedio" placeholder="Monto promedio" value={formData.montoPromedio} onChange={handleChange} required />
-        <input type="text" name="perfilBuscado" placeholder="Perfil buscado" value={formData.perfilBuscado} onChange={handleChange} required />
-        <input type="text" name="convocatoria" placeholder="Convocatoria" value={formData.convocatoria} onChange={handleChange} required />
-        <textarea name="comentario" placeholder="Comentario" value={formData.comentario} onChange={handleChange} required />
-        <input type="text" name="algoritmo" placeholder="Algoritmo" value={formData.algoritmo} onChange={handleChange} required />
-        <button type="submit" className="modal-submit">Guardar</button>
-      </form>
-    </div>
-
-    <button onClick={toggleModal} className="close-button">Cerrar</button>
-  </div>
-</div>
-
-      )}
+      <ModalForm
+        title="Agregar nuevo Capital Venture"
+        isOpen={isOpen}
+        message={message}
+        onClose={close}
+        onSubmit={handleSubmit}
+        scroll
+      >
+        <input
+          type="text"
+          name="nombre"
+          placeholder="Nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="sitioWeb"
+          placeholder="Sitio Web"
+          value={formData.sitioWeb}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="contacto"
+          placeholder="Contacto (opcional)"
+          value={formData.contacto}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="region"
+          placeholder="Región"
+          value={formData.region}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="tipoInversion"
+          placeholder="Tipo de inversión"
+          value={formData.tipoInversion}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="foco"
+          placeholder="Foco"
+          value={formData.foco}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="etapa"
+          placeholder="Etapa"
+          value={formData.etapa}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="montoPromedio"
+          placeholder="Monto promedio"
+          value={formData.montoPromedio}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="perfilBuscado"
+          placeholder="Perfil buscado"
+          value={formData.perfilBuscado}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="convocatoria"
+          placeholder="Convocatoria"
+          value={formData.convocatoria}
+          onChange={handleChange}
+          required
+        />
+        <textarea
+          name="comentario"
+          placeholder="Comentario"
+          value={formData.comentario}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="algoritmo"
+          placeholder="Algoritmo"
+          value={formData.algoritmo}
+          onChange={handleChange}
+          required
+        />
+      </ModalForm>
     </>
   );
 };

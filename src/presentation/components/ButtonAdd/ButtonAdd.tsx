@@ -2,10 +2,11 @@ import { useState } from "react";
 import { database, ref, push } from "../../../firebase/firebaseConfig";
 import "./ButtonAdd.css";
 import { Universidad } from "../../../core/entities/universidad.entity";
+import { useModalForm } from "../../../hooks/useModalForm";
+import { ModalForm } from "../ModalForm/ModalForm";
 
 export const ButtonAdd = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { isOpen, message, setMessage, open, close } = useModalForm();
 
   const [formData, setFormData] = useState<Universidad>({
     nombre: "",
@@ -17,11 +18,6 @@ export const ButtonAdd = () => {
       x: ""
     }
   });
-
-  const toggleModal = () => {
-    setIsOpen(!isOpen);
-    setMessage(null); // Limpia mensajes al abrir/cerrar modal
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -68,7 +64,7 @@ export const ButtonAdd = () => {
           x: ""
         }
       });
-      setIsOpen(false);
+      close({ clearMessage: false });
       setMessage({ type: "success", text: "¡Guardado con éxito!" });
 
       setTimeout(() => setMessage(null), 3000); // Oculta mensaje luego de 3s
@@ -80,75 +76,62 @@ export const ButtonAdd = () => {
 
   return (
     <>
-      <button className="floating-button" onClick={toggleModal}>
+      <button className="floating-button" onClick={open}>
         +
       </button>
+      <ModalForm
+        title="Agregar nueva universidad"
+        isOpen={isOpen}
+        message={message}
+        onClose={close}
+        onSubmit={handleSubmit}
+      >
+        <input
+          type="text"
+          name="nombre"
+          placeholder="Nombre universidad"
+          value={formData.nombre}
+          onChange={handleChange}
+          required
+        />
 
-      {isOpen && (
-        <div className="modal-overlay" onClick={toggleModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2 className="mb-5 text-center">Agregar nueva universidad</h2>
+        <input
+          type="text"
+          name="contacto"
+          placeholder="Contacto (opcional)"
+          value={formData.contacto}
+          onChange={handleChange}
+        />
+        <input
+          type="url"
+          name="linkedin"
+          placeholder="LinkedIn (opcional)"
+          value={formData.redes?.linkedin}
+          onChange={handleChange}
+        />
+        <input
+          type="url"
+          name="instagram"
+          placeholder="Instagram (opcional)"
+          value={formData.redes?.instagram}
+          onChange={handleChange}
+        />
+        <input
+          type="url"
+          name="x"
+          placeholder="X (Twitter) (opcional)"
+          value={formData.redes?.x}
+          onChange={handleChange}
+        />
 
-            {message && (
-              <div className={`feedback-message ${message.type}`}>
-                {message.text}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                name="nombre"
-                placeholder="Nombre universidad"
-                value={formData.nombre}
-                onChange={handleChange}
-                required
-              />
-
-              <input
-                type="text"
-                name="contacto"
-                placeholder="Contacto (opcional)"
-                value={formData.contacto}
-                onChange={handleChange}
-              />
-              <input
-                type="url"
-                name="linkedin"
-                placeholder="LinkedIn (opcional)"
-                value={formData.redes?.linkedin}
-                onChange={handleChange}
-              />
-              <input
-                type="url"
-                name="instagram"
-                placeholder="Instagram (opcional)"
-                value={formData.redes?.instagram}
-                onChange={handleChange}
-              />
-              <input
-                type="url"
-                name="x"
-                placeholder="X (Twitter) (opcional)"
-                value={formData.redes?.x}
-                onChange={handleChange}
-              />
-
-              <textarea
-                name="descripcion"
-                placeholder="Descripción"
-                value={formData.descripcion}
-                onChange={handleChange}
-                required
-              />
-              <button type="submit" className="modal-submit">Guardar</button>
-            </form>
-            <button onClick={toggleModal} className="close-button">
-              Cerrar
-            </button>
-          </div>
-        </div>
-      )}
+        <textarea
+          name="descripcion"
+          placeholder="Descripción"
+          value={formData.descripcion}
+          onChange={handleChange}
+          required
+        />
+      </ModalForm>
     </>
   );
 };
