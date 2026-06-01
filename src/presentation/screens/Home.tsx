@@ -13,6 +13,7 @@ import { ButtonAddPlataformas } from "../components/ButtonAddPlataformas/ButtonA
 import { DashboardOrganismos } from "../components/DashboardOrganismosEstados/DasboardOrganismosEstados";
 import { ButtonAddOrganismoEstado } from "../components/ButtonAddOrganismos/ButtonAddOrganismos";
 import { DashboardEventos } from "../components/DashboardEventos/DashboardEventos";
+import { DashboardIncubadoras } from "../components/DashboardIncubadoras/DashboardIncubadoras";
 
 export const Home = () => {
   const [active, setActive] = useState("universidades");
@@ -20,7 +21,7 @@ export const Home = () => {
   return (
     <div className="bg-gray-300 p-4 min-h-screen">
       {/* Menu de selección */}
-      <div className="flex space-x-4 mb-6">
+      <div className="flex flex-wrap gap-4 mb-6">
         <button
           className={`px-4 py-2 rounded ${
             active === "universidades" ? "bg-blue-600 text-white" : "bg-white"
@@ -70,6 +71,14 @@ export const Home = () => {
         >
           Eventos
         </button>
+        <button
+          className={`px-4 py-2 rounded ${
+            active === "Incubadoras" ? "bg-blue-600 text-white" : "bg-white"
+          }`}
+          onClick={() => setActive("Incubadoras")}
+        >
+          Incubadoras
+        </button>
       </div>
 
       {/* Dashboards */}
@@ -107,6 +116,11 @@ export const Home = () => {
         {active === "Eventos" && (
           <>
             <DashboardEventos />
+          </>
+        )}
+        {active === "Incubadoras" && (
+          <>
+            <DashboardIncubadoras />
           </>
         )}
       </div>
