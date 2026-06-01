@@ -5,6 +5,7 @@ import crowfundingsReducer from './slices/crowfunding/crowfundingSlice';
 import capitalVenturesReducer from './slices/capitalVentures/capitalVentures';
 import plataformasReducer from './slices/plataforma/plataforma';
 import organismosReducer  from './slices/organismosEstados/organismosEstados';
+import incubadorasReducer from './slices/incubadoras/incubadorasSlice';
 
 export const store = configureStore({
   reducer: {
@@ -13,7 +14,8 @@ export const store = configureStore({
     crowfundings : crowfundingsReducer,
     capitalVentures: capitalVenturesReducer,
     plataformas: plataformasReducer,
-    organismos: organismosReducer
+    organismos: organismosReducer,
+    incubadoras: incubadorasReducer
   },
 })
 
