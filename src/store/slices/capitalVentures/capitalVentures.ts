@@ -1,40 +1,13 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { CapitalVentures } from "../../../core/entities/capitalVentures.entity";
+import { createListSlice } from "../createListSlice";
 
-interface CapitalVenturesState {
-  capitalVentures: CapitalVentures[];
-  loading: boolean;
-  error: string | null;
-}
-
-const initialState: CapitalVenturesState = {
-  capitalVentures: [],
-  loading: false,
-  error: null,
-};
-
-const crowfundingSlice = createSlice({
+const capitalVenturesSlice = createListSlice<CapitalVentures, "capitalVentures">({
   name: "capitalVentures",
-  initialState,
-  reducers: {
-    fetchCapitalVentures(state, action: PayloadAction<CapitalVentures[]>) {
-      state.capitalVentures = action.payload;
-      state.loading = false;
-      state.error = null;
-    },
-    setLoading(state, action: PayloadAction<boolean>) {
-      state.loading = action.payload;
-    },
-    setError(state, action: PayloadAction<string | null>) {
-      state.error = action.payload;
-    },
-  },
+  itemsKey: "capitalVentures",
+  fetchAction: "fetchCapitalVentures",
 });
 
-export const {
-  fetchCapitalVentures,
-  setLoading,
-  setError,
-} = crowfundingSlice.actions;
+export const { fetchCapitalVentures, setLoading, setError } =
+  capitalVenturesSlice.actions;
 
-export default crowfundingSlice.reducer;
+export default capitalVenturesSlice.reducer;
