@@ -1,55 +1,48 @@
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
 # Uai-Extension
+
+Uai-Extension es un frontend institucional de UAI que centraliza listados y dashboards para multiples categorias del ecosistema: universidades, crowfunding, capital ventures, plataformas, organismos del estado, eventos e incubadoras. La aplicacion consume datos desde Firebase y utiliza autenticacion con Firebase Auth.
+
+## Funcionalidades
+- Navegacion por categorias con dashboards dedicados.
+- Busqueda y gestion de registros en los listados disponibles.
+- Integracion con Firebase (Auth, Firestore y Realtime Database).
+- Estado global con Redux Toolkit.
+- Estilos con Tailwind CSS sobre Vite.
+
+## Stack
+- React 19, TypeScript, Vite
+- Redux Toolkit + React Redux
+- React Router v7
+- Firebase (Auth, Firestore, Realtime Database)
+- Tailwind CSS (@tailwindcss/vite)
+
+## Estructura del proyecto
+- src/presentation/ - UI y pantallas
+- src/core/entities/ - entidades del dominio
+- src/store/ - store de Redux y slices
+- src/hooks/ - hooks reutilizables
+- src/firebase/ - configuracion de Firebase
+
+## Variables de entorno
+Crear un archivo .env a partir de .env.example y completar los valores:
+
+```
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+VITE_FIREBASE_MEASUREMENT_ID=
+```
+
+## Scripts
+- npm run dev - iniciar servidor de desarrollo
+- npm run build - type-check y build
+- npm run lint - ejecutar ESLint
+- npm run preview - previsualizar build
+
+## Inicio rapido
+1. npm install
+2. Copiar .env.example a .env y configurar Firebase
+3. npm run dev
