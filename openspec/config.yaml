@@ -1,0 +1,58 @@
+schema: spec-driven
+
+context: |
+  Tech stack: React 19, TypeScript ~5.7, Vite 6, Redux Toolkit 2.6,
+  react-redux 9.2, react-router-dom 7.5, Firebase 11.6 (Auth, Firestore,
+  Realtime DB), Tailwind CSS 4 via @tailwindcss/vite.
+  Architecture: presentation/core(store/hooks/firebase) layout per AGENTS.md.
+  Testing: Vitest with jsdom and React Testing Library; type-check via tsc -b, lint via eslint.
+  Style: Tailwind + global styles in src/index.css; ESM modules.
+  api.md is the source of truth for backend contracts/enums/auth.
+
+strict_tdd: false
+
+testing:
+  runner: vitest
+  test_command: "npm run test"
+  build_command: "npm run build"
+  lint_command: "npm run lint"
+  coverage_available: false
+  coverage_threshold: 0
+  layers:
+    unit: true
+    integration: true
+    e2e: false
+
+session:
+  execution_mode: auto
+  artifact_store: both
+  chained_pr_strategy: auto-forecast
+  review_budget_lines: 800
+
+rules:
+  proposal:
+    - Verify backend-facing behavior against api.md and affected source before proposing.
+    - Include rollback plan for risky changes.
+    - Do not invent endpoints, payloads, enum values, auth flow, roles, or Firebase collections.
+  specs:
+    - Use Given/When/Then for scenarios.
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY).
+  design:
+    - Preserve the presentation/core/store/hooks/firebase layout from AGENTS.md.
+    - Do not add Redux where state is local or derived.
+    - Document architecture decisions with rationale.
+  tasks:
+    - Group by phase, use hierarchical numbering.
+    - Keep tasks completable in one session.
+  apply:
+    - Follow existing code patterns; keep code/comments in English.
+    tdd: false
+    test_command: "npm run test"
+  verify:
+    test_command: "npm run test"
+    build_command: "npm run build"
+    lint_command: "npm run lint"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas.
+    - Default base branch is main; never use codex/ branch prefix.

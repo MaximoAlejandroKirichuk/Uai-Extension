@@ -13,9 +13,10 @@ interface RealtimeListOptions<T> {
 
 export const useRealtimeList = <T>(options: RealtimeListOptions<T>) => {
   const dispatch = useAppDispatch();
+  const { action, errorLabel, mapItem, path } = options;
 
   useEffect(() => {
-    const listRef = ref(database, options.path);
+    const listRef = ref(database, path);
 
     const unsubscribe = onValue(
       listRef,
@@ -23,8 +24,8 @@ export const useRealtimeList = <T>(options: RealtimeListOptions<T>) => {
         const data = snapshot.val();
         if (data) {
           const items = Object.entries(data).map(([id, value]) => {
-            if (options.mapItem) {
-              return options.mapItem(value, id);
+            if (mapItem) {
+              return mapItem(value, id);
             }
             return {
               ...(value ?? {}),
@@ -32,20 +33,20 @@ export const useRealtimeList = <T>(options: RealtimeListOptions<T>) => {
             } as T;
           });
 
-          dispatch(options.action(items));
+          dispatch(action(items));
         } else {
-          dispatch(options.action([]));
+          dispatch(action([]));
         }
       },
       (error) => {
-        if (options.errorLabel) {
-          console.error(`Error al obtener ${options.errorLabel}:`, error);
+        if (errorLabel) {
+          console.error(`Error al obtener ${errorLabel}:`, error);
           return;
         }
-        console.error(`Error reading ${options.path}:`, error);
+        console.error(`Error reading ${path}:`, error);
       }
     );
 
     return () => unsubscribe();
-  }, [dispatch, options.action, options.errorLabel, options.mapItem, options.path]);
+  }, [action, dispatch, errorLabel, mapItem, path]);
 };

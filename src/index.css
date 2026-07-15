@@ -1,1 +1,24 @@
 @import "tailwindcss";
+
+:root {
+  --color-brand: #7a1c2e;
+  --color-brand-contrast: #ffffff;
+  --color-surface: #f7f2f4;
+  --color-surface-elevated: #ffffff;
+  --color-surface-muted: #efe7e9;
+  --color-border: #d8c4c8;
+  --color-text: #24161a;
+  --color-text-muted: #6f5960;
+  --color-focus: #b94b64;
+  --color-danger: #b42318;
+}
+
+html {
+  background: var(--color-surface);
+}
+
+body {
+  min-height: 100vh;
+  background: var(--color-surface);
+  color: var(--color-text);
+}

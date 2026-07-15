@@ -2,38 +2,45 @@ import { Universidad } from "../../../../core/entities/universidad.entity";
 
 interface Props {
   uni: Universidad;
-  id: string; // Necesitamos el id del registro en Firebase
+  id: string;
   onDelete: (id: string) => void;
 }
 
 export const ItemUniversidad = ({ uni, id, onDelete }: Props) => {
   return (
-    <div className="border rounded p-4 shadow hover:shadow-md transition">
-      <div className="flex justify-between items-start mb-2">
-        <h2 className="text-xl font-semibold">{uni.nombre}</h2>
-        <div className="flex gap-1">
-          <button className="transition-transform duration-200 hover:scale-110 cursor-pointer"
-            onClick={() => onDelete(id)} title="Eliminar">
-            🗑️
-          </button>
-        </div>
+    <div className="flex h-full flex-col rounded-[1.5rem] border border-[color:var(--color-border)] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="mb-3 flex items-start justify-between gap-4">
+        <h2 className="text-lg font-semibold tracking-tight text-[color:var(--color-text)]">
+          {uni.nombre}
+        </h2>
+        <button
+          type="button"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--color-danger)]/30 bg-[color:var(--color-danger)]/10 text-[color:var(--color-danger)] transition hover:bg-[var(--color-danger)] hover:text-white focus:outline-none focus:ring-4 focus:ring-[color:var(--color-danger)]/20"
+          onClick={() => onDelete(id)}
+          title="Eliminar universidad"
+          aria-label={`Eliminar ${uni.nombre}`}
+        >
+          <span aria-hidden="true">🗑️</span>
+        </button>
       </div>
 
-      <p className="text-gray-700 mb-2">{uni.descripcion}</p>
+      <p className="mb-3 text-sm leading-6 text-[color:var(--color-text-muted)]">
+        {uni.descripcion}
+      </p>
 
       {uni.contacto && (
-        <p className="text-sm mb-2">
-          <span className="font-bold">Contacto:</span> {uni.contacto}
+        <p className="mb-3 text-sm text-[color:var(--color-text)]">
+          <span className="font-semibold">Contacto:</span> {uni.contacto}
         </p>
       )}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="mt-auto flex flex-wrap gap-2 pt-2">
         {uni.redes?.linkedin && (
           <a
             href={uni.redes.linkedin}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 underline text-sm"
+            className="text-sm font-medium text-[color:var(--color-brand)] underline decoration-[color:var(--color-border)] underline-offset-4 transition hover:opacity-80"
           >
             LinkedIn
           </a>
@@ -43,7 +50,7 @@ export const ItemUniversidad = ({ uni, id, onDelete }: Props) => {
             href={uni.redes.instagram}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-pink-600 underline text-sm"
+            className="text-sm font-medium text-[color:var(--color-brand)] underline decoration-[color:var(--color-border)] underline-offset-4 transition hover:opacity-80"
           >
             Instagram
           </a>
@@ -53,7 +60,7 @@ export const ItemUniversidad = ({ uni, id, onDelete }: Props) => {
             href={uni.redes.x}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-black underline text-sm"
+            className="text-sm font-medium text-[color:var(--color-brand)] underline decoration-[color:var(--color-border)] underline-offset-4 transition hover:opacity-80"
           >
             X
           </a>
