@@ -55,7 +55,7 @@ export const ConfirmAction = ({
         onClick={(event) => event.stopPropagation()}
       >
           <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand)]">
+            <p className="text-xs font-semibold text-[color:var(--color-brand)]">
               Confirmación requerida
             </p>
           <h3 id="confirm-action-title" className="text-xl font-semibold tracking-tight text-[color:var(--color-text)]">

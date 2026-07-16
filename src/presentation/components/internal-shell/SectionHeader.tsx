@@ -10,7 +10,7 @@ export const SectionHeader = ({ title, description, actions }: SectionHeaderProp
   return (
     <div className="flex flex-col gap-4 rounded-[1.75rem] border border-[color:var(--color-border)] bg-[var(--color-surface-elevated)] px-6 py-5 shadow-sm sm:px-7 lg:flex-row lg:items-center lg:justify-between">
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand)]">
+        <p className="text-xs font-semibold text-[color:var(--color-brand)]">
           Sección
         </p>
         <div className="space-y-1.5">

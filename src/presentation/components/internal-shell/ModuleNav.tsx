@@ -31,7 +31,7 @@ export const ModuleNav = ({ modules, activeKey, onChange }: ModuleNavProps) => {
                   : "border-[color:var(--color-border)] bg-white text-[color:var(--color-text)] hover:border-[color:var(--color-brand)] hover:bg-[var(--color-surface-muted)]"
               }`}
             >
-              <span className="block text-xs font-semibold uppercase tracking-[0.28em] opacity-75">
+              <span className="block text-xs font-semibold opacity-75">
                 Módulo
               </span>
               <span className="mt-2 block text-sm font-medium leading-5 sm:text-base">

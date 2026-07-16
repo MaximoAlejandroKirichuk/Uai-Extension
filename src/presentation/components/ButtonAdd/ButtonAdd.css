@@ -2,6 +2,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    padding: 0;
     background-color: var(--color-brand);
     color: var(--color-brand-contrast);
     border: none;
@@ -11,11 +12,29 @@
     right: 20px;
     width: 65px;
     height: 65px;
-    font-size: 36px;
+    font-size: 0;
     font-weight: bold;
+    line-height: 1;
     z-index: 1000;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+
+  .floating-button::before,
+  .floating-button::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 22px;
+    height: 4px;
+    border-radius: 999px;
+    background-color: currentColor;
+    transform: translate(-50%, -50%);
+  }
+
+  .floating-button::after {
+    transform: translate(-50%, -50%) rotate(90deg);
   }
   
   .modal-overlay {
