@@ -1,6 +1,9 @@
 # env
 .env
 
+# Local AI/tooling cache
+.atl/
+
 # Logs
 logs
 *.log

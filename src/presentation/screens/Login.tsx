@@ -1,9 +1,9 @@
-import { Pressable } from "../components/Pressable"
+import { Pressable } from "../components/Pressable";
 import { useAuth } from "../../hooks/useAuth";
 
 export const Login = () => {
 
-  const {formData, onSubmit, onInputChange} = useAuth()
+  const { formData, loading, error, onSubmit, onInputChange } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -37,9 +37,16 @@ export const Login = () => {
             />
           </div>
 
+          {error && (
+            <p className="text-sm text-red-600" role="alert">
+              {error}
+            </p>
+          )}
+
           <Pressable
-            onClick={() => onSubmit}
-            label="Login"
+            type="submit"
+            disabled={loading}
+            label={loading ? "Ingresando..." : "Login"}
           />
         </form>
       </div>

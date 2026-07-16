@@ -4,9 +4,12 @@ import "../ButtonAdd/ButtonAdd.css";
 import { OrganismoEstado } from "../../../core/entities/organismosEstado.entity";
 import { useModalForm } from "../../../hooks/useModalForm";
 import { ModalForm } from "../ModalForm/ModalForm";
+import { useTimedMessage } from "../../../hooks/useTimedMessage";
 
 export const ButtonAddOrganismoEstado = () => {
-  const { isOpen, message, setMessage, open, close } = useModalForm();
+  const { isOpen, open, close } = useModalForm();
+  const { message, showMessage, clearMessage } = useTimedMessage();
+  const [pending, setPending] = useState(false);
 
   const [formData, setFormData] = useState<OrganismoEstado>({
     nombre: "",
@@ -35,6 +38,11 @@ export const ButtonAddOrganismoEstado = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (pending) {
+      return;
+    }
+
+    setPending(true);
 
     try {
       await push(ref(database, "organismosEstado"), formData);
@@ -52,26 +60,37 @@ export const ButtonAddOrganismoEstado = () => {
         beneficiarios: "",
         alianzas: "",
       });
-      close({ clearMessage: false });
-      setMessage({ type: "success", text: "¡Organismo guardado con éxito!" });
-
-      setTimeout(() => setMessage(null), 3000);
+      showMessage({ type: "success", text: "¡Organismo guardado con éxito!" });
     } catch (error) {
       console.error("Error al guardar organismo:", error);
-      setMessage({ type: "error", text: "Error al guardar los datos." });
+      showMessage({ type: "error", text: "Error al guardar los datos." });
+    } finally {
+      setPending(false);
     }
+  };
+
+  const handleOpen = () => {
+    clearMessage();
+    open();
+  };
+
+  const handleClose = () => {
+    clearMessage();
+    close();
   };
 
   return (
     <>
-      <button className="floating-button" onClick={open}>+</button>
+      <button className="floating-button" onClick={handleOpen}>+</button>
 
       <ModalForm
         title="Agregar nuevo Organismo del Estado"
         isOpen={isOpen}
         message={message}
-        onClose={close}
+        pending={pending}
+        onClose={handleClose}
         onSubmit={handleSubmit}
+        pendingLabel="Guardando..."
         scroll
       >
         <input

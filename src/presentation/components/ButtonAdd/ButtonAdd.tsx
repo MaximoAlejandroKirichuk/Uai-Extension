@@ -4,9 +4,12 @@ import "./ButtonAdd.css";
 import { Universidad } from "../../../core/entities/universidad.entity";
 import { useModalForm } from "../../../hooks/useModalForm";
 import { ModalForm } from "../ModalForm/ModalForm";
+import { useTimedMessage } from "../../../hooks/useTimedMessage";
 
 export const ButtonAdd = () => {
-  const { isOpen, message, setMessage, open, close } = useModalForm();
+  const { isOpen, open, close } = useModalForm();
+  const { message, showMessage, clearMessage } = useTimedMessage();
+  const [pending, setPending] = useState(false);
 
   const [formData, setFormData] = useState<Universidad>({
     nombre: "",
@@ -40,6 +43,11 @@ export const ButtonAdd = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (pending) {
+      return;
+    }
+
+    setPending(true);
 
     const universidadData: Universidad = {
       nombre: formData.nombre,
@@ -64,27 +72,38 @@ export const ButtonAdd = () => {
           x: ""
         }
       });
-      close({ clearMessage: false });
-      setMessage({ type: "success", text: "¡Guardado con éxito!" });
-
-      setTimeout(() => setMessage(null), 3000); // Oculta mensaje luego de 3s
+      showMessage({ type: "success", text: "¡Guardado con éxito!" });
     } catch (error) {
       console.error("Error al guardar:", error);
-      setMessage({ type: "error", text: "Error al guardar los datos." });
+      showMessage({ type: "error", text: "Error al guardar los datos." });
+    } finally {
+      setPending(false);
     }
+  };
+
+  const handleOpen = () => {
+    clearMessage();
+    open();
+  };
+
+  const handleClose = () => {
+    clearMessage();
+    close();
   };
 
   return (
     <>
-      <button className="floating-button" onClick={open}>
+      <button className="floating-button" onClick={handleOpen}>
         +
       </button>
       <ModalForm
         title="Agregar nueva universidad"
         isOpen={isOpen}
         message={message}
-        onClose={close}
+        pending={pending}
+        onClose={handleClose}
         onSubmit={handleSubmit}
+        pendingLabel="Guardando..."
       >
         <input
           type="text"

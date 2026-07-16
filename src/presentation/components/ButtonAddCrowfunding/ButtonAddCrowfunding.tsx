@@ -4,9 +4,12 @@ import "../ButtonAdd/ButtonAdd.css";
 import { Crowfunding } from "../../../core/entities/crowfunding.entity";
 import { useModalForm } from "../../../hooks/useModalForm";
 import { ModalForm } from "../ModalForm/ModalForm";
+import { useTimedMessage } from "../../../hooks/useTimedMessage";
 
 export const ButtonAddCrowfunding = () => {
-  const { isOpen, message, setMessage, open, close } = useModalForm();
+  const { isOpen, open, close } = useModalForm();
+  const { message, showMessage, clearMessage } = useTimedMessage();
+  const [pending, setPending] = useState(false);
 
   const [formData, setFormData] = useState<Crowfunding>({
     nombrePlataforma: "",
@@ -27,6 +30,11 @@ export const ButtonAddCrowfunding = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (pending) {
+      return;
+    }
+
+    setPending(true);
 
     try {
       await push(ref(database, "crowfundings"), formData);
@@ -38,27 +46,38 @@ export const ButtonAddCrowfunding = () => {
         comisiones: "",
         algoritmo: "",
       });
-      close({ clearMessage: false });
-      setMessage({ type: "success", text: "¡Crowfunding guardado con éxito!" });
-
-      setTimeout(() => setMessage(null), 3000);
+      showMessage({ type: "success", text: "¡Crowfunding guardado con éxito!" });
     } catch (error) {
       console.error("Error al guardar crowfunding:", error);
-      setMessage({ type: "error", text: "Error al guardar los datos." });
+      showMessage({ type: "error", text: "Error al guardar los datos." });
+    } finally {
+      setPending(false);
     }
+  };
+
+  const handleOpen = () => {
+    clearMessage();
+    open();
+  };
+
+  const handleClose = () => {
+    clearMessage();
+    close();
   };
 
   return (
     <>
-      <button className="floating-button" onClick={open}>
+      <button className="floating-button" onClick={handleOpen}>
         +
       </button>
       <ModalForm
         title="Agregar nuevo crowdfunding"
         isOpen={isOpen}
         message={message}
-        onClose={close}
+        pending={pending}
+        onClose={handleClose}
         onSubmit={handleSubmit}
+        pendingLabel="Guardando..."
       >
         <input
           type="text"
