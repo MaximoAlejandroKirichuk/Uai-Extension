@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAppSelector } from "../../../hooks/hooks";
 import { RootState } from "../../../store/store";
 import { fetchPlataformas } from "../../../store/slices/plataforma/plataforma";
@@ -6,8 +6,14 @@ import { Plataforma } from "../../../core/entities/plataformas.entity";
 import { remove, ref } from "firebase/database";
 import { database } from "../../../firebase/firebaseConfig";
 import { ItemPlataforma } from "./Plataformas/ItemPlataforma";
-import { LoadingComponent } from "../loading/LoadingComponent";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  SectionHeader,
+} from "../internal-shell";
+import { ConfirmAction } from "../confirmation";
 
 export const DashboardPlataformas = () => {
   const { plataformas, loading, error } = useAppSelector(
@@ -15,6 +21,8 @@ export const DashboardPlataformas = () => {
   );
 
   const [busqueda, setBusqueda] = useState("");
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useRealtimeList<Plataforma>({
     path: "plataformas",
@@ -22,52 +30,127 @@ export const DashboardPlataformas = () => {
     errorLabel: "plataformas",
   });
 
-  const handleDelete = async (id: string) => {
+  const plataformasFiltradas = useMemo(() => {
+    const busquedaNormalizada = busqueda.trim().toLowerCase();
+
+    return (plataformas ?? []).filter((plataforma: Plataforma) =>
+      busquedaNormalizada ? plataforma.nombrePlataforma.toLowerCase().includes(busquedaNormalizada) : true
+    );
+  }, [busqueda, plataformas]);
+
+  const selectedPlataforma = useMemo(
+    () =>
+      pendingDeleteId
+        ? (plataformas ?? []).find((plataforma) => plataforma.id === pendingDeleteId)
+        : null,
+    [plataformas, pendingDeleteId]
+  );
+
+  const handleDeleteRequest = (id: string) => {
+    setPendingDeleteId(id);
+  };
+
+  const handleDeleteCancel = () => {
+    if (isDeleting) {
+      return;
+    }
+
+    setPendingDeleteId(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!pendingDeleteId) {
+      return;
+    }
+
+    const plataformaId = pendingDeleteId;
+
+    setIsDeleting(true);
+
     try {
-      await remove(ref(database, `plataformas/${id}`));
+      await remove(ref(database, `plataformas/${plataformaId}`));
+      setPendingDeleteId(null);
       alert("Plataforma eliminada correctamente.");
     } catch (error) {
       console.error("Error al eliminar plataforma:", error);
       alert("Error al eliminar la plataforma.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const plataformasFiltradas = plataformas?.filter((plataforma: Plataforma) =>
-    plataforma.nombrePlataforma
-      .toLowerCase()
-      .includes(busqueda.toLowerCase())
-  );
+  const hasNoResults = !loading && !error && plataformasFiltradas.length === 0;
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Dashboard de Plataformas</h1>
+    <div className="space-y-6 pb-20">
+      <SectionHeader
+        title="Dashboard de Plataformas"
+        description="Revise el conjunto de datos de Plataformas actual, filtre por nombre y use la confirmación para las eliminaciones."
+        actions={
+          <div className="rounded-full border border-[color:var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[color:var(--color-text-muted)]">
+            {plataformas?.length ?? 0} registros
+          </div>
+        }
+      />
 
-      {/* Filtro */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Buscar por nombre"
-          className="border p-2 rounded w-full sm:w-1/2"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-        />
+      <div className="rounded-[1.75rem] border border-[color:var(--color-border)] bg-[var(--color-surface-elevated)] p-6 shadow-sm">
+        <div className="grid gap-4 sm:grid-cols-2 lg:max-w-2xl">
+          <label className="space-y-2">
+            <span className="text-sm font-medium text-[color:var(--color-text-muted)]">
+              Buscar por nombre
+            </span>
+            <input
+              type="text"
+              placeholder="Buscar Plataformas"
+              className="w-full rounded-2xl border border-[color:var(--color-border)] bg-white px-4 py-3 text-sm text-[color:var(--color-text)] outline-none transition placeholder:text-[color:var(--color-text-muted)] focus:border-[color:var(--color-focus)] focus:ring-4 focus:ring-[color:var(--color-focus)]/15"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          </label>
+        </div>
+
+        <div className="mt-6">
+          {loading ? (
+            <LoadingState />
+          ) : error ? (
+            <ErrorState
+              title="No se pudieron cargar los registros"
+              description="La lista de Plataformas no se pudo cargar en este momento. Intente nuevamente más tarde."
+            />
+          ) : hasNoResults ? (
+            <EmptyState
+              title="No se encontraron registros"
+              description={
+                busqueda
+                  ? "No hay registros que coincidan con la búsqueda actual."
+                  : "Aún no hay registros de Plataformas disponibles."
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {plataformasFiltradas.map((plataforma: Plataforma) => (
+                <ItemPlataforma
+                  key={plataforma.id}
+                  id={plataforma.id!}
+                  plataforma={plataforma}
+                  onDelete={handleDeleteRequest}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Estado */}
-      {loading && <LoadingComponent />}
-      {error && <p className="text-red-500">Error: {error}</p>}
-
-      {/* Lista */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {plataformasFiltradas?.map((plataforma: Plataforma) => (
-          <ItemPlataforma
-            key={plataforma.id}
-            plataforma={plataforma}
-            id={plataforma.id!}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+      <ConfirmAction
+        open={pendingDeleteId !== null}
+        title={selectedPlataforma ? `¿Eliminar ${selectedPlataforma.nombrePlataforma}?` : "¿Eliminar registro?"}
+        description="Esta acción eliminará el registro seleccionado del nodo plataformas existente. Confirme solo si desea continuar."
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        pending={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </div>
   );
 };
