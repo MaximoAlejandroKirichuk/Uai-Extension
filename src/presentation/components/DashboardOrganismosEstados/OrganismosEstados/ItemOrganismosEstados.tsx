@@ -1,4 +1,5 @@
 import { OrganismoEstado } from "../../../../core/entities/organismosEstado.entity";
+import { DashboardItemCard } from "../../internal-shell";
 
 interface Props {
   organismo: OrganismoEstado;
@@ -8,30 +9,51 @@ interface Props {
 
 export const ItemOrganismosEstados = ({ organismo, id, onDelete }: Props) => {
   return (
-    <div className="border rounded p-4 shadow hover:shadow-md transition">
-      <div className="flex justify-between items-start mb-2">
-        <h2 className="text-xl font-semibold text-indigo-700">{organismo.nombre}</h2>
-        <button
-          className="transition-transform duration-200 hover:scale-110 cursor-pointer"
-          onClick={() => onDelete(id)}
-          title="Eliminar"
+    <DashboardItemCard
+      title={organismo.nombre}
+      deleteLabel={`Eliminar ${organismo.nombre}`}
+      onDelete={() => onDelete(id)}
+    >
+      <p>
+        <span className="font-semibold">Área:</span> {organismo.area}
+      </p>
+      <p>{organismo.descripcion}</p>
+
+      <p>
+        <span className="font-semibold">Programas:</span> {organismo.programas}
+      </p>
+      <p>
+        <span className="font-semibold">Tipos de financiamiento:</span> {organismo.tiposFinanciamiento}
+      </p>
+      <p>
+        <span className="font-semibold">Fechas relevantes:</span> {organismo.fechasRelevantes}
+      </p>
+      <p>
+        <span className="font-semibold">Requisitos acceso:</span> {organismo.requisitosAcceso}
+      </p>
+      <p>
+        <span className="font-semibold">Contacto:</span> {organismo.contacto}
+      </p>
+      <p>
+        <span className="font-semibold">Enlaces:</span>{" "}
+        <a
+          href={organismo.enlaces}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[color:var(--color-brand)] underline decoration-[color:var(--color-border)] underline-offset-4 transition hover:opacity-80"
         >
-          🗑️
-        </button>
-      </div>
-
-      <p className="text-gray-700 mb-2"><strong>Área:</strong> {organismo.area}</p>
-      <p className="text-gray-700 mb-2">{organismo.descripcion}</p>
-
-      <p className="text-sm"><strong>Programas:</strong> {organismo.programas}</p>
-      <p className="text-sm"><strong>Tipos de financiamiento:</strong> {organismo.tiposFinanciamiento}</p>
-      <p className="text-sm"><strong>Fechas relevantes:</strong> {organismo.fechasRelevantes}</p>
-      <p className="text-sm"><strong>Requisitos acceso:</strong> {organismo.requisitosAcceso}</p>
-      <p className="text-sm"><strong>Contacto:</strong> {organismo.contacto}</p>
-      <p className="text-sm"><strong>Enlaces:</strong> <a href={organismo.enlaces} target="_blank" rel="noreferrer" className="text-blue-600 underline">{organismo.enlaces}</a></p>
-      <p className="text-sm"><strong>Estado seguimiento:</strong> {organismo.estadoSeguimiento}</p>
-      <p className="text-sm"><strong>Beneficiarios:</strong> {organismo.beneficiarios}</p>
-      <p className="text-sm"><strong>Alianzas:</strong> {organismo.alianzas}</p>
-    </div>
+          {organismo.enlaces}
+        </a>
+      </p>
+      <p>
+        <span className="font-semibold">Estado seguimiento:</span> {organismo.estadoSeguimiento}
+      </p>
+      <p>
+        <span className="font-semibold">Beneficiarios:</span> {organismo.beneficiarios}
+      </p>
+      <p>
+        <span className="font-semibold">Alianzas:</span> {organismo.alianzas}
+      </p>
+    </DashboardItemCard>
   );
 };

@@ -1,64 +1,62 @@
 import { Universidad } from "../../../../core/entities/universidad.entity";
+import { DashboardItemCard } from "../../internal-shell";
 
 interface Props {
   uni: Universidad;
-  id: string; // Necesitamos el id del registro en Firebase
+  id: string;
   onDelete: (id: string) => void;
 }
 
 export const ItemUniversidad = ({ uni, id, onDelete }: Props) => {
   return (
-    <div className="border rounded p-4 shadow hover:shadow-md transition">
-      <div className="flex justify-between items-start mb-2">
-        <h2 className="text-xl font-semibold">{uni.nombre}</h2>
-        <div className="flex gap-1">
-          <button className="transition-transform duration-200 hover:scale-110 cursor-pointer"
-            onClick={() => onDelete(id)} title="Eliminar">
-            🗑️
-          </button>
-        </div>
-      </div>
-
-      <p className="text-gray-700 mb-2">{uni.descripcion}</p>
+    <DashboardItemCard
+      title={uni.nombre}
+      deleteLabel={`Eliminar ${uni.nombre}`}
+      onDelete={() => onDelete(id)}
+      footer={
+        <>
+          {uni.redes?.linkedin && (
+            <a
+              href={uni.redes.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-[color:var(--color-brand)] underline decoration-[color:var(--color-border)] underline-offset-4 transition hover:opacity-80"
+            >
+              LinkedIn
+            </a>
+          )}
+          {uni.redes?.instagram && (
+            <a
+              href={uni.redes.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-[color:var(--color-brand)] underline decoration-[color:var(--color-border)] underline-offset-4 transition hover:opacity-80"
+            >
+              Instagram
+            </a>
+          )}
+          {uni.redes?.x && (
+            <a
+              href={uni.redes.x}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-[color:var(--color-brand)] underline decoration-[color:var(--color-border)] underline-offset-4 transition hover:opacity-80"
+            >
+              X
+            </a>
+          )}
+        </>
+      }
+    >
+      <p>
+        {uni.descripcion}
+      </p>
 
       {uni.contacto && (
-        <p className="text-sm mb-2">
-          <span className="font-bold">Contacto:</span> {uni.contacto}
+        <p className="text-[color:var(--color-text)]">
+          <span className="font-semibold">Contacto:</span> {uni.contacto}
         </p>
       )}
-
-      <div className="flex flex-wrap gap-2">
-        {uni.redes?.linkedin && (
-          <a
-            href={uni.redes.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 underline text-sm"
-          >
-            LinkedIn
-          </a>
-        )}
-        {uni.redes?.instagram && (
-          <a
-            href={uni.redes.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-pink-600 underline text-sm"
-          >
-            Instagram
-          </a>
-        )}
-        {uni.redes?.x && (
-          <a
-            href={uni.redes.x}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-black underline text-sm"
-          >
-            X
-          </a>
-        )}
-      </div>
-    </div>
+    </DashboardItemCard>
   );
 };

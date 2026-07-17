@@ -1,20 +1,17 @@
+import { EmptyState, SectionHeader } from "../internal-shell";
 
 export const DashboardEventos = () => {
-  
-    //TODO: Hay que llamar a la api desde aca
   return (
-    <div className="p-6 max-h-full flex-auto">
-      <h1 className="text-3xl font-bold mb-4">Dashboard de Eventos de endeavor scrapeados.</h1>
+    <div className="space-y-6 pb-20">
+      <SectionHeader
+        title="Dashboard de Eventos"
+        description="Esta sección todavía no tiene carga de datos ni acciones CRUD."
+      />
 
-      {/* Filtros */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-       
-      </div>
-
-      {/* Estado */}
-
-      {/* Lista */}
-      
+      <EmptyState
+        title="Módulo en preparación"
+        description="Aquí se mostrará la vista de eventos cuando el flujo de datos esté disponible."
+      />
     </div>
   );
 };

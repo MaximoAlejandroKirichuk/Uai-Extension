@@ -1,11 +1,8 @@
 import { useState } from "react";
-
 import { DashboardUniversidades } from "../components/DashboardUniversidades/DasboardUniversidades";
 import { ButtonAdd } from "../components/ButtonAdd/ButtonAdd";
-
 import { DashboardCrowfunding } from "../components/DashboardCrowfunding/DashboardCrowfunding";
 import { ButtonAddCrowfunding } from "../components/ButtonAddCrowfunding/ButtonAddCrowfunding";
-
 import { DashboardCapitalVentures } from "../components/DashboardCapitalVentures/DashboardCapitalVentures";
 import { ButtonAddCapitalVentures } from "../components/ButtonAddCV/ButtonAddCapitalVenture";
 import { DashboardPlataformas } from "../components/DashboardPlataformas/DashboardPlataformas";
@@ -14,116 +11,89 @@ import { DashboardOrganismos } from "../components/DashboardOrganismosEstados/Da
 import { ButtonAddOrganismoEstado } from "../components/ButtonAddOrganismos/ButtonAddOrganismos";
 import { DashboardEventos } from "../components/DashboardEventos/DashboardEventos";
 import { DashboardIncubadoras } from "../components/DashboardIncubadoras/DashboardIncubadoras";
+import {
+  InternalPortalShell,
+  ModuleNav,
+  type HomeModuleConfig,
+} from "../components/internal-shell";
+
+const HOME_MODULES: HomeModuleConfig[] = [
+  {
+    key: "universidades",
+    label: "Universidades",
+    render: () => (
+      <>
+        <DashboardUniversidades />
+        <ButtonAdd />
+      </>
+    ),
+  },
+  {
+    key: "crowfunding",
+    label: "Financiamiento colectivo",
+    render: () => (
+      <>
+        <DashboardCrowfunding />
+        <ButtonAddCrowfunding />
+      </>
+    ),
+  },
+  {
+    key: "capitalVentures",
+    label: "Capital de riesgo",
+    render: () => (
+      <>
+        <DashboardCapitalVentures />
+        <ButtonAddCapitalVentures />
+      </>
+    ),
+  },
+  {
+    key: "Plataformas",
+    label: "Plataformas",
+    render: () => (
+      <>
+        <DashboardPlataformas />
+        <ButtonAddPlataformas />
+      </>
+    ),
+  },
+  {
+    key: "Organismos estados",
+    label: "Organismos estatales",
+    render: () => (
+      <>
+        <DashboardOrganismos />
+        <ButtonAddOrganismoEstado />
+      </>
+    ),
+  },
+  {
+    key: "Eventos",
+    label: "Eventos",
+    render: () => <DashboardEventos />,
+  },
+  {
+    key: "Incubadoras",
+    label: "Incubadoras",
+    render: () => <DashboardIncubadoras />,
+  },
+];
 
 export const Home = () => {
-  const [active, setActive] = useState("universidades");
+  const [active, setActive] = useState(HOME_MODULES[0].key);
+
+  const activeModule = HOME_MODULES.find((module) => module.key === active) ?? HOME_MODULES[0];
 
   return (
-    <div className="bg-gray-300 p-4 min-h-screen">
-      {/* Menu de selección */}
-      <div className="flex flex-wrap gap-4 mb-6">
-        <button
-          className={`px-4 py-2 rounded ${
-            active === "universidades" ? "bg-blue-600 text-white" : "bg-white"
-          }`}
-          onClick={() => setActive("universidades")}
-        >
-          Universidades
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${
-            active === "crowfunding" ? "bg-blue-600 text-white" : "bg-white"
-          }`}
-          onClick={() => setActive("crowfunding")}
-        >
-          Crowfunding
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${
-            active === "capitalVentures" ? "bg-blue-600 text-white" : "bg-white"
-          }`}
-          onClick={() => setActive("capitalVentures")}
-        >
-          Capital Ventures
-        </button>
-
-         <button
-          className={`px-4 py-2 rounded ${
-            active === "Plataformas" ? "bg-blue-600 text-white" : "bg-white"
-          }`}
-          onClick={() => setActive("Plataformas")}
-        >
-          Plataformas
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${
-            active === "Organismos estados" ? "bg-blue-600 text-white" : "bg-white"
-          }`}
-          onClick={() => setActive("Organismos estados")}
-        >
-          Organismos estados
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${
-            active === "Eventos" ? "bg-blue-600 text-white" : "bg-white"
-          }`}
-          onClick={() => setActive("Eventos")}
-        >
-          Eventos
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${
-            active === "Incubadoras" ? "bg-blue-600 text-white" : "bg-white"
-          }`}
-          onClick={() => setActive("Incubadoras")}
-        >
-          Incubadoras
-        </button>
-      </div>
-
-      {/* Dashboards */}
-      <div>
-        {active === "universidades" && (
-          <>
-            <DashboardUniversidades />
-            <ButtonAdd />
-          </>
-        )}
-        {active === "crowfunding" && (
-          <>
-            <DashboardCrowfunding />
-            <ButtonAddCrowfunding />
-          </>
-        )}
-        {active === "capitalVentures" && (
-          <>
-            <DashboardCapitalVentures />
-            <ButtonAddCapitalVentures />
-          </>
-        )}
-        {active === "Plataformas" && (
-          <>
-            <DashboardPlataformas />
-            <ButtonAddPlataformas />
-          </>
-        )}
-        {active === "Organismos estados" && (
-          <>
-            <DashboardOrganismos />
-            <ButtonAddOrganismoEstado />
-          </>
-        )}
-        {active === "Eventos" && (
-          <>
-            <DashboardEventos />
-          </>
-        )}
-        {active === "Incubadoras" && (
-          <>
-            <DashboardIncubadoras />
-          </>
-        )}
-      </div>
-    </div>
+    <InternalPortalShell
+      title="Portal interno institucional"
+      description="Seleccione un módulo para trabajar con las superficies internas actuales y conservar los patrones de acceso existentes."
+      navigation={
+        <ModuleNav modules={HOME_MODULES} activeKey={activeModule.key} onChange={setActive} />
+      }
+    >
+      <div className="space-y-6">{activeModule.render()}</div>
+    </InternalPortalShell>
   );
 };

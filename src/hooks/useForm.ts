@@ -1,6 +1,6 @@
 import { useState, ChangeEvent } from "react";
 
-export const useForm = <T extends Record<string, any>>(initial: T) => {
+export const useForm = <T extends Record<string, unknown>>(initial: T) => {
   const [formState, setFormState] = useState<T>(initial);
 
   const onInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
