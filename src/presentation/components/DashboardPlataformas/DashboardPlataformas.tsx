@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
 import { useAppSelector } from "../../../hooks/hooks";
 import { RootState } from "../../../store/store";
-import { fetchPlataformas } from "../../../store/slices/plataforma/plataforma";
+import {
+  fetchPlataformas,
+  setError,
+  setLoading,
+} from "../../../store/slices/plataforma/plataforma";
 import { Plataforma } from "../../../core/entities/plataformas.entity";
 import { ItemPlataforma } from "./Plataformas/ItemPlataforma";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
+import { useDeleteConfirmation } from "../../../hooks/useDeleteConfirmation";
 import {
   EmptyState,
   ErrorState,
@@ -12,7 +17,6 @@ import {
   SectionHeader,
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
-import { deleteRealtimeRecord } from "../../../firebase/realtimeRepository";
 
 export const DashboardPlataformas = () => {
   const { plataformas, loading, error } = useAppSelector(
@@ -20,63 +24,40 @@ export const DashboardPlataformas = () => {
   );
 
   const [busqueda, setBusqueda] = useState("");
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   useRealtimeList<Plataforma>({
     path: "plataformas",
     action: fetchPlataformas,
+    setLoadingAction: setLoading,
+    setErrorAction: setError,
+    errorMessage: "No se pudieron cargar los registros.",
     errorLabel: "plataformas",
+  });
+
+  const {
+    selectedItem: selectedPlataforma,
+    isDeleting,
+    isOpen,
+    requestDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useDeleteConfirmation<Plataforma>({
+    path: "plataformas",
+    items: plataformas ?? [],
+    getId: (plataforma) => plataforma.id!,
+    onSuccessMessage: "Plataforma eliminada correctamente.",
+    onErrorMessage: "Error al eliminar la plataforma.",
   });
 
   const plataformasFiltradas = useMemo(() => {
     const busquedaNormalizada = busqueda.trim().toLowerCase();
 
     return (plataformas ?? []).filter((plataforma: Plataforma) =>
-      busquedaNormalizada ? plataforma.nombrePlataforma.toLowerCase().includes(busquedaNormalizada) : true
+      busquedaNormalizada
+        ? plataforma.nombrePlataforma.toLowerCase().includes(busquedaNormalizada)
+        : true
     );
   }, [busqueda, plataformas]);
-
-  const selectedPlataforma = useMemo(
-    () =>
-      pendingDeleteId
-        ? (plataformas ?? []).find((plataforma) => plataforma.id === pendingDeleteId)
-        : null,
-    [plataformas, pendingDeleteId]
-  );
-
-  const handleDeleteRequest = (id: string) => {
-    setPendingDeleteId(id);
-  };
-
-  const handleDeleteCancel = () => {
-    if (isDeleting) {
-      return;
-    }
-
-    setPendingDeleteId(null);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!pendingDeleteId) {
-      return;
-    }
-
-    const plataformaId = pendingDeleteId;
-
-    setIsDeleting(true);
-
-    try {
-      await deleteRealtimeRecord("plataformas", plataformaId);
-      setPendingDeleteId(null);
-      alert("Plataforma eliminada correctamente.");
-    } catch (error) {
-      console.error("Error al eliminar plataforma:", error);
-      alert("Error al eliminar la plataforma.");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   const hasNoResults = !loading && !error && plataformasFiltradas.length === 0;
 
@@ -132,7 +113,7 @@ export const DashboardPlataformas = () => {
                   key={plataforma.id}
                   id={plataforma.id!}
                   plataforma={plataforma}
-                  onDelete={handleDeleteRequest}
+                  onDelete={requestDelete}
                 />
               ))}
             </div>
@@ -141,14 +122,14 @@ export const DashboardPlataformas = () => {
       </div>
 
       <ConfirmAction
-        open={pendingDeleteId !== null}
+        open={isOpen}
         title={selectedPlataforma ? `¿Eliminar ${selectedPlataforma.nombrePlataforma}?` : "¿Eliminar registro?"}
         description="Esta acción eliminará el registro seleccionado del nodo plataformas existente. Confirme solo si desea continuar."
         confirmLabel="Eliminar"
         cancelLabel="Cancelar"
         pending={isDeleting}
-        onConfirm={handleDeleteConfirm}
-        onCancel={handleDeleteCancel}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
       />
     </div>
   );

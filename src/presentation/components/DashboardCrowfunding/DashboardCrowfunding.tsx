@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
 import { RootState } from "../../../store/store";
-import { fetchCrowfundings } from "../../../store/slices/crowfunding/crowfundingSlice";
+import {
+  fetchCrowfundings,
+  setError,
+  setLoading,
+} from "../../../store/slices/crowfunding/crowfundingSlice";
 import { Crowfunding } from "../../../core/entities/crowfunding.entity";
 import { useAppSelector } from "../../../hooks/hooks";
 import { ItemCrowfunding } from "./Crowfunding/ItemCrowfunding";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
+import { useDeleteConfirmation } from "../../../hooks/useDeleteConfirmation";
 import {
   EmptyState,
   ErrorState,
@@ -12,7 +17,6 @@ import {
   SectionHeader,
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
-import { deleteRealtimeRecord } from "../../../firebase/realtimeRepository";
 
 export const DashboardCrowfunding = () => {
   const { crowfundings, loading, error } = useAppSelector(
@@ -20,62 +24,40 @@ export const DashboardCrowfunding = () => {
   );
 
   const [busqueda, setBusqueda] = useState<string>("");
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
 
   useRealtimeList<Crowfunding>({
     path: "crowfundings",
     action: fetchCrowfundings,
+    setLoadingAction: setLoading,
+    setErrorAction: setError,
+    errorMessage: "No se pudieron cargar los proyectos.",
     errorLabel: "proyectos",
+  });
+
+  const {
+    selectedItem: selectedCrowfunding,
+    isDeleting,
+    isOpen,
+    requestDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useDeleteConfirmation<Crowfunding>({
+    path: "crowfundings",
+    items: crowfundings ?? [],
+    getId: (proyecto) => proyecto.id!,
+    onSuccessMessage: "Proyecto eliminado",
+    onErrorMessage: "Error al eliminar",
   });
 
   const crowfundingsFiltrados = useMemo(() => {
     const busquedaNormalizada = busqueda.trim().toLowerCase();
 
     return (crowfundings ?? []).filter((proyecto: Crowfunding) =>
-      busquedaNormalizada ? proyecto.nombrePlataforma.toLowerCase().includes(busquedaNormalizada) : true
+      busquedaNormalizada
+        ? proyecto.nombrePlataforma.toLowerCase().includes(busquedaNormalizada)
+        : true
     );
   }, [busqueda, crowfundings]);
-
-  const selectedCrowfunding = useMemo(
-    () =>
-      pendingDeleteId
-        ? (crowfundings ?? []).find((proyecto) => proyecto.id === pendingDeleteId)
-        : null,
-    [crowfundings, pendingDeleteId]
-  );
-
-  const handleDeleteRequest = (id: string) => {
-    setPendingDeleteId(id);
-  };
-
-  const handleDeleteCancel = () => {
-    if (isDeleting) {
-      return;
-    }
-
-    setPendingDeleteId(null);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!pendingDeleteId) {
-      return;
-    }
-
-    setIsDeleting(true);
-
-    try {
-      await deleteRealtimeRecord("crowfundings", pendingDeleteId);
-      setPendingDeleteId(null);
-      alert("Proyecto eliminado");
-    } catch (error) {
-      console.error("Error al eliminar:", error);
-      alert("Error al eliminar");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   const hasNoResults = !loading && !error && (crowfundingsFiltrados?.length ?? 0) === 0;
 
@@ -129,7 +111,7 @@ export const DashboardCrowfunding = () => {
               {crowfundingsFiltrados?.map((proyecto: Crowfunding) => (
                 <ItemCrowfunding
                   id={proyecto.id!}
-                  onDelete={handleDeleteRequest}
+                  onDelete={requestDelete}
                   key={proyecto.id}
                   crowfunding={proyecto}
                 />
@@ -140,14 +122,14 @@ export const DashboardCrowfunding = () => {
       </div>
 
       <ConfirmAction
-        open={pendingDeleteId !== null}
+        open={isOpen}
         title={selectedCrowfunding ? `¿Eliminar ${selectedCrowfunding.nombrePlataforma}?` : "¿Eliminar proyecto?"}
         description="Esta acción eliminará el registro seleccionado del nodo crowfundings existente. Confirme solo si desea continuar."
         confirmLabel="Eliminar"
         cancelLabel="Cancelar"
         pending={isDeleting}
-        onConfirm={handleDeleteConfirm}
-        onCancel={handleDeleteCancel}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
       />
     </div>
   );

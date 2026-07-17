@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
 import { RootState } from "../../../store/store";
-import { fetchCapitalVentures } from "../../../store/slices/capitalVentures/capitalVentures";
+import {
+  fetchCapitalVentures,
+  setError,
+  setLoading,
+} from "../../../store/slices/capitalVentures/capitalVentures";
 import { CapitalVentures } from "../../../core/entities/capitalVentures.entity";
 import { useAppSelector } from "../../../hooks/hooks";
 import { ItemCapitalVenture } from "./CapitalVentures/ItemCapitalVentures";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
+import { useDeleteConfirmation } from "../../../hooks/useDeleteConfirmation";
 import {
   EmptyState,
   ErrorState,
@@ -12,7 +17,6 @@ import {
   SectionHeader,
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
-import { deleteRealtimeRecord } from "../../../firebase/realtimeRepository";
 
 export const DashboardCapitalVentures = () => {
   const { capitalVentures, loading, error } = useAppSelector(
@@ -20,13 +24,29 @@ export const DashboardCapitalVentures = () => {
   );
 
   const [busqueda, setBusqueda] = useState<string>("");
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   useRealtimeList<CapitalVentures>({
     path: "capitalVentures",
     action: fetchCapitalVentures,
+    setLoadingAction: setLoading,
+    setErrorAction: setError,
+    errorMessage: "No se pudieron cargar los registros.",
     errorLabel: "capital ventures",
+  });
+
+  const {
+    selectedItem: selectedVenture,
+    isDeleting,
+    isOpen,
+    requestDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useDeleteConfirmation<CapitalVentures>({
+    path: "capitalVentures",
+    items: capitalVentures ?? [],
+    getId: (venture) => venture.id!,
+    onSuccessMessage: "Registro eliminado",
+    onErrorMessage: "Error al eliminar",
   });
 
   const filtrados = useMemo(() => {
@@ -36,45 +56,6 @@ export const DashboardCapitalVentures = () => {
       busquedaNormalizada ? venture.nombre.toLowerCase().includes(busquedaNormalizada) : true
     );
   }, [busqueda, capitalVentures]);
-
-  const selectedVenture = useMemo(
-    () =>
-      pendingDeleteId
-        ? (capitalVentures ?? []).find((venture) => venture.id === pendingDeleteId)
-        : null,
-    [capitalVentures, pendingDeleteId]
-  );
-
-  const handleDeleteRequest = (id: string) => {
-    setPendingDeleteId(id);
-  };
-
-  const handleDeleteCancel = () => {
-    if (isDeleting) {
-      return;
-    }
-
-    setPendingDeleteId(null);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!pendingDeleteId) {
-      return;
-    }
-
-    setIsDeleting(true);
-
-    try {
-      await deleteRealtimeRecord("capitalVentures", pendingDeleteId);
-      setPendingDeleteId(null);
-      alert("Registro eliminado");
-    } catch (error) {
-      console.error("Error al eliminar:", error);
-      alert("Error al eliminar");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   const hasNoResults = !loading && !error && filtrados.length === 0;
 
@@ -130,7 +111,7 @@ export const DashboardCapitalVentures = () => {
                   key={venture.id}
                   id={venture.id!}
                   venture={venture}
-                  onDelete={handleDeleteRequest}
+                  onDelete={requestDelete}
                 />
               ))}
             </div>
@@ -139,14 +120,14 @@ export const DashboardCapitalVentures = () => {
       </div>
 
       <ConfirmAction
-        open={pendingDeleteId !== null}
+        open={isOpen}
         title={selectedVenture ? `¿Eliminar ${selectedVenture.nombre}?` : "¿Eliminar registro?"}
         description="Esta acción eliminará el registro seleccionado del nodo capitalVentures existente. Confirme solo si desea continuar."
         confirmLabel="Eliminar"
         cancelLabel="Cancelar"
         pending={isDeleting}
-        onConfirm={handleDeleteConfirm}
-        onCancel={handleDeleteCancel}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
       />
     </div>
   );

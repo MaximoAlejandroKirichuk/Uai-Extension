@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Incubadora } from "../../../core/entities/incubadora.entity";
-import { subscribeToRealtimeList } from "../../../firebase/realtimeRepository";
-import { useAppDispatch, useAppSelector } from "../../../hooks/hooks";
+import { useAppSelector } from "../../../hooks/hooks";
 import { RootState } from "../../../store/store";
 import {
   fetchIncubadoras,
   setError,
   setLoading,
 } from "../../../store/slices/incubadoras/incubadorasSlice";
+import { useRealtimeList } from "../../../hooks/useRealtimeList";
 import {
   EmptyState,
   ErrorState,
@@ -40,8 +40,10 @@ const compareByRegistration = (a: Incubadora, b: Incubadora) => {
   return a.nroInscripcion.localeCompare(b.nroInscripcion);
 };
 
+const sortByRegistration = (items: Incubadora[]) =>
+  [...items].sort(compareByRegistration);
+
 export const DashboardIncubadoras = () => {
-  const dispatch = useAppDispatch();
   const { incubadoras, loading, error } = useAppSelector(
     (state: RootState) => state.incubadoras
   );
@@ -49,26 +51,15 @@ export const DashboardIncubadoras = () => {
   const [busqueda, setBusqueda] = useState("");
   const [provincia, setProvincia] = useState("");
 
-  useEffect(() => {
-    dispatch(setLoading(true));
-    dispatch(setError(null));
-
-    const unsubscribe = subscribeToRealtimeList<Incubadora>({
-      path: "incubadoras",
-      onData: (items) => {
-        const incubadorasArray = [...items].sort(compareByRegistration);
-
-        dispatch(fetchIncubadoras(incubadorasArray));
-      },
-      onError: (error) => {
-        console.error("Error al obtener incubadoras:", error);
-        dispatch(setError("No se pudieron cargar las incubadoras."));
-        dispatch(setLoading(false));
-      },
-    });
-
-    return () => unsubscribe();
-  }, [dispatch]);
+  useRealtimeList<Incubadora>({
+    path: "incubadoras",
+    action: fetchIncubadoras,
+    setLoadingAction: setLoading,
+    setErrorAction: setError,
+    errorMessage: "No se pudieron cargar las incubadoras.",
+    errorLabel: "incubadoras",
+    transformItems: sortByRegistration,
+  });
 
   const provincias = useMemo(
     () =>

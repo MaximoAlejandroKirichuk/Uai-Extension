@@ -1,36 +1,66 @@
 import { useEffect } from "react";
-import type { AnyAction } from "@reduxjs/toolkit";
+import type { ActionCreatorWithPayload } from "@reduxjs/toolkit";
 import { subscribeToRealtimeList } from "../firebase/realtimeRepository";
 import { useAppDispatch } from "./hooks";
 
 interface RealtimeListOptions<T> {
   path: string;
-  action: (items: T[]) => AnyAction;
-  mapItem?: (value: unknown, id: string) => T;
+  action: ActionCreatorWithPayload<T[]>;
+  setLoadingAction?: ActionCreatorWithPayload<boolean>;
+  setErrorAction?: ActionCreatorWithPayload<string | null>;
+  errorMessage?: string;
   errorLabel?: string;
+  mapItem?: (value: unknown, id: string) => T;
+  transformItems?: (items: T[]) => T[];
 }
 
 export const useRealtimeList = <T>(options: RealtimeListOptions<T>) => {
   const dispatch = useAppDispatch();
-  const { action, errorLabel, mapItem, path } = options;
+  const {
+    action,
+    errorLabel,
+    errorMessage,
+    mapItem,
+    path,
+    setErrorAction,
+    setLoadingAction,
+    transformItems,
+  } = options;
 
   useEffect(() => {
+    if (setLoadingAction) {
+      dispatch(setLoadingAction(true));
+    }
+
+    if (setErrorAction) {
+      dispatch(setErrorAction(null));
+    }
+
     const unsubscribe = subscribeToRealtimeList<T>({
       path,
       mapItem,
       onData: (items) => {
-        dispatch(action(items));
+        const nextItems = transformItems ? transformItems(items) : items;
+
+        dispatch(action(nextItems));
       },
       onError: (error) => {
         if (errorLabel) {
           console.error(`Error al obtener ${errorLabel}:`, error);
-          return;
+        } else {
+          console.error(`Error reading ${path}:`, error);
         }
 
-        console.error(`Error reading ${path}:`, error);
+        if (setLoadingAction) {
+          dispatch(setLoadingAction(false));
+        }
+
+        if (setErrorAction && errorMessage) {
+          dispatch(setErrorAction(errorMessage));
+        }
       },
     });
 
     return () => unsubscribe();
-  }, [action, dispatch, errorLabel, mapItem, path]);
+  }, [action, dispatch, errorLabel, errorMessage, mapItem, path, setErrorAction, setLoadingAction, transformItems]);
 };

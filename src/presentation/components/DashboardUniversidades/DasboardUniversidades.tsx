@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
 import { RootState } from "../../../store/store";
-import { fetchUniversidades } from "../../../store/slices/universidades/universidadesSlice";
+import {
+  fetchUniversidades,
+  setError,
+  setLoading,
+} from "../../../store/slices/universidades/universidadesSlice";
 import { Universidad } from "../../../core/entities/universidad.entity";
 import { useAppSelector } from "../../../hooks/hooks";
 import { ItemUniversidad } from "./Universidades/ItemUniversidad";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
+import { useDeleteConfirmation } from "../../../hooks/useDeleteConfirmation";
 import {
   EmptyState,
   ErrorState,
@@ -12,7 +17,6 @@ import {
   SectionHeader,
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
-import { deleteRealtimeRecord } from "../../../firebase/realtimeRepository";
 
 export const DashboardUniversidades = () => {
   const { universidades, loading, error } = useAppSelector(
@@ -21,13 +25,28 @@ export const DashboardUniversidades = () => {
 
   const [busqueda, setBusqueda] = useState<string>("");
   const [filtroRed, setFiltroRed] = useState<string>("");
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   useRealtimeList<Universidad>({
     path: "universidades",
     action: fetchUniversidades,
-    errorLabel: "universidades",
+    setLoadingAction: setLoading,
+    setErrorAction: setError,
+    errorMessage: "No se pudieron cargar las universidades.",
+  });
+
+  const {
+    selectedItem: selectedUniversity,
+    isDeleting,
+    isOpen,
+    requestDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useDeleteConfirmation<Universidad>({
+    path: "universidades",
+    items: universidades ?? [],
+    getId: (uni) => uni.id!,
+    onSuccessMessage: "Universidad eliminada correctamente.",
+    onErrorMessage: "Error al eliminar la universidad.",
   });
 
   const universidadesFiltradas = useMemo(() => {
@@ -40,42 +59,6 @@ export const DashboardUniversidades = () => {
       return coincideNombre && coincideRed;
     });
   }, [busqueda, filtroRed, universidades]);
-
-  const selectedUniversity = useMemo(
-    () => (pendingDeleteId ? (universidades ?? []).find((uni) => uni.id === pendingDeleteId) : null),
-    [pendingDeleteId, universidades]
-  );
-
-  const handleDeleteRequest = (id: string) => {
-    setPendingDeleteId(id);
-  };
-
-  const handleDeleteCancel = () => {
-    if (isDeleting) {
-      return;
-    }
-
-    setPendingDeleteId(null);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!pendingDeleteId) {
-      return;
-    }
-
-    setIsDeleting(true);
-
-    try {
-      await deleteRealtimeRecord("universidades", pendingDeleteId);
-      setPendingDeleteId(null);
-      alert("Universidad eliminada correctamente.");
-    } catch (deleteError) {
-      console.error("Error deleting university:", deleteError);
-      alert("Error al eliminar la universidad.");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   const hasNoResults = !loading && !error && universidadesFiltradas.length === 0;
 
@@ -146,7 +129,7 @@ export const DashboardUniversidades = () => {
               {universidadesFiltradas.map((uni: Universidad) => (
                 <ItemUniversidad
                   id={uni.id!}
-                  onDelete={handleDeleteRequest}
+                  onDelete={requestDelete}
                   key={uni.id}
                   uni={uni}
                 />
@@ -157,14 +140,14 @@ export const DashboardUniversidades = () => {
       </div>
 
       <ConfirmAction
-        open={pendingDeleteId !== null}
+        open={isOpen}
         title={selectedUniversity ? `¿Eliminar ${selectedUniversity.nombre}?` : "¿Eliminar universidad?"}
         description="Esta acción eliminará la universidad seleccionada del nodo universidades existente. Confirme solo si desea continuar."
         confirmLabel="Eliminar"
         cancelLabel="Cancelar"
         pending={isDeleting}
-        onConfirm={handleDeleteConfirm}
-        onCancel={handleDeleteCancel}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
       />
     </div>
   );

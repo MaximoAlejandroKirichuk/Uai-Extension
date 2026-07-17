@@ -1,12 +1,13 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardCrowfunding } from "./DashboardCrowfunding";
-import { fetchCrowfundings } from "../../../store/slices/crowfunding/crowfundingSlice";
+import { fetchCrowfundings, setError, setLoading } from "../../../store/slices/crowfunding/crowfundingSlice";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
+import { useDeleteConfirmation } from "../../../hooks/useDeleteConfirmation";
 
-const { deleteRealtimeRecord } = vi.hoisted(() => ({
-  deleteRealtimeRecord: vi.fn(),
+const { useDeleteConfirmationMock } = vi.hoisted(() => ({
+  useDeleteConfirmationMock: vi.fn(),
 }));
 
 let mockState = {
@@ -27,6 +28,20 @@ let mockState = {
   },
 };
 
+const requestDelete = vi.fn();
+const confirmDelete = vi.fn();
+const cancelDelete = vi.fn();
+
+const deleteHookState = {
+  selectedItem: mockState.crowfundings.crowfundings[0],
+  isOpen: true,
+  isDeleting: false,
+  error: null as string | null,
+  requestDelete,
+  confirmDelete,
+  cancelDelete,
+};
+
 vi.mock("../../../hooks/hooks", () => ({
   useAppSelector: (selector: (state: typeof mockState) => unknown) => selector(mockState),
 }));
@@ -35,8 +50,8 @@ vi.mock("../../../hooks/useRealtimeList", () => ({
   useRealtimeList: vi.fn(),
 }));
 
-vi.mock("../../../firebase/realtimeRepository", () => ({
-  deleteRealtimeRecord,
+vi.mock("../../../hooks/useDeleteConfirmation", () => ({
+  useDeleteConfirmation: useDeleteConfirmationMock,
 }));
 
 describe("DashboardCrowfunding", () => {
@@ -60,8 +75,16 @@ describe("DashboardCrowfunding", () => {
         error: null,
       },
     };
+    deleteHookState.selectedItem = mockState.crowfundings.crowfundings[0];
+    deleteHookState.isOpen = true;
+    deleteHookState.isDeleting = false;
+    deleteHookState.error = null;
+    requestDelete.mockClear();
+    confirmDelete.mockClear();
+    cancelDelete.mockClear();
     vi.stubGlobal("alert", vi.fn());
     vi.clearAllMocks();
+    useDeleteConfirmationMock.mockReturnValue(deleteHookState);
   });
 
   it("renders the shared section header and record count", () => {
@@ -71,13 +94,25 @@ describe("DashboardCrowfunding", () => {
     expect(screen.getByText(/1 registros/i)).toBeInTheDocument();
   });
 
-  it("uses the existing Firebase data path and action", () => {
+  it("uses the shared realtime and delete hook contracts", () => {
     render(<DashboardCrowfunding />);
 
     expect(useRealtimeList).toHaveBeenCalledWith(
       expect.objectContaining({
         path: "crowfundings",
         action: fetchCrowfundings,
+        setLoadingAction: setLoading,
+        setErrorAction: setError,
+        errorMessage: "No se pudieron cargar los proyectos.",
+      })
+    );
+
+    expect(useDeleteConfirmation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: "crowfundings",
+        getId: expect.any(Function),
+        onSuccessMessage: "Proyecto eliminado",
+        onErrorMessage: "Error al eliminar",
       })
     );
   });
@@ -108,30 +143,20 @@ describe("DashboardCrowfunding", () => {
     expect(screen.queryByText(/network error/i)).not.toBeInTheDocument();
   });
 
-  it("confirms delete through the existing Firebase path without changing scope", async () => {
+  it("wires delete confirmation through the hook seam", async () => {
     const user = userEvent.setup();
 
     render(<DashboardCrowfunding />);
 
     await user.click(screen.getByRole("button", { name: /eliminar crowdfunding prueba/i }));
-    await user.click(screen.getByRole("button", { name: /^eliminar$/i }));
 
-    await waitFor(() => {
-      expect(deleteRealtimeRecord).toHaveBeenCalledTimes(1);
-    });
-    expect(deleteRealtimeRecord).toHaveBeenCalledWith("crowfundings", "cr-1");
-    expect(window.alert).toHaveBeenCalledWith("Proyecto eliminado");
-  });
+    expect(requestDelete).toHaveBeenCalledWith("cr-1");
+    expect(screen.getByRole("dialog", { name: /eliminar crowdfunding prueba/i })).toBeInTheDocument();
 
-  it("cancels delete without removing the record", async () => {
-    const user = userEvent.setup();
-
-    render(<DashboardCrowfunding />);
-
-    await user.click(screen.getByRole("button", { name: /eliminar crowdfunding prueba/i }));
     await user.click(screen.getByRole("button", { name: /cancelar/i }));
+    expect(cancelDelete).toHaveBeenCalledTimes(1);
 
-    expect(deleteRealtimeRecord).not.toHaveBeenCalled();
-    expect(screen.queryByRole("dialog", { name: /eliminar crowdfunding prueba/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /^eliminar$/i }));
+    expect(confirmDelete).toHaveBeenCalledTimes(1);
   });
 });

@@ -68,7 +68,7 @@ The `Home` screen MUST render as a dashboard-style internal portal with institut
 
 ### Requirement: Async State Surfaces
 
-Shared loading, empty, and error surfaces MUST exist as reusable primitives and MUST be adopted by the pilot surface. Each async view MUST present at least one explicit state per case and MUST NOT silently render nothing.
+Shared loading, empty, and error surfaces MUST exist as reusable primitives and MUST be adopted consistently by all realtime dashboards. The shell MUST not force a single card or table layout in order to render those states.
 
 #### Scenario: Loading state
 
@@ -87,6 +87,13 @@ Shared loading, empty, and error surfaces MUST exist as reusable primitives and 
 - GIVEN a request fails
 - WHEN the surface renders
 - THEN an error surface MUST render and MUST NOT expose stack traces to the user
+
+#### Scenario: Table-based dashboard uses shared states
+
+- GIVEN DashboardIncubadoras renders
+- WHEN loading, empty, or error occurs
+- THEN it MUST use the shared state surfaces
+- AND it MUST keep its existing table layout
 
 ### Requirement: Safe Destructive Action UX (Pilot Only)
 
