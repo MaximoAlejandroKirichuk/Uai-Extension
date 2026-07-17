@@ -4,8 +4,6 @@ import { fetchUniversidades } from "../../../store/slices/universidades/universi
 import { Universidad } from "../../../core/entities/universidad.entity";
 import { useAppSelector } from "../../../hooks/hooks";
 import { ItemUniversidad } from "./Universidades/ItemUniversidad";
-import { remove, ref } from "firebase/database";
-import { database } from "../../../firebase/firebaseConfig";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
 import {
   EmptyState,
@@ -14,6 +12,7 @@ import {
   SectionHeader,
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
+import { deleteRealtimeRecord } from "../../../firebase/realtimeRepository";
 
 export const DashboardUniversidades = () => {
   const { universidades, loading, error } = useAppSelector(
@@ -67,7 +66,7 @@ export const DashboardUniversidades = () => {
     setIsDeleting(true);
 
     try {
-      await remove(ref(database, `universidades/${pendingDeleteId}`));
+      await deleteRealtimeRecord("universidades", pendingDeleteId);
       setPendingDeleteId(null);
       alert("Universidad eliminada correctamente.");
     } catch (deleteError) {

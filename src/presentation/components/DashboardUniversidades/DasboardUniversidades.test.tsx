@@ -3,8 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { DashboardUniversidades } from "./DasboardUniversidades";
 import { fetchUniversidades } from "../../../store/slices/universidades/universidadesSlice";
-import { remove, ref } from "firebase/database";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
+
+const { deleteRealtimeRecord } = vi.hoisted(() => ({
+  deleteRealtimeRecord: vi.fn(),
+}));
 
 let mockState = {
   universidades: {
@@ -28,13 +31,8 @@ vi.mock("../../../hooks/useRealtimeList", () => ({
   useRealtimeList: vi.fn(),
 }));
 
-vi.mock("../../../firebase/firebaseConfig", () => ({
-  database: { key: "mock-database" },
-}));
-
-vi.mock("firebase/database", () => ({
-  remove: vi.fn(),
-  ref: vi.fn(),
+vi.mock("../../../firebase/realtimeRepository", () => ({
+  deleteRealtimeRecord,
 }));
 
 describe("DashboardUniversidades", () => {
@@ -111,7 +109,7 @@ describe("DashboardUniversidades", () => {
 
     await user.click(screen.getByRole("button", { name: /cancelar/i }));
 
-    expect(remove).not.toHaveBeenCalled();
+    expect(deleteRealtimeRecord).not.toHaveBeenCalled();
     expect(screen.queryByRole("dialog", { name: /eliminar universidad de prueba/i })).not.toBeInTheDocument();
   });
 
@@ -128,9 +126,9 @@ describe("DashboardUniversidades", () => {
     await user.click(screen.getByRole("button", { name: /^eliminar$/i }));
 
     await vi.waitFor(() => {
-      expect(remove).toHaveBeenCalledTimes(1);
+      expect(deleteRealtimeRecord).toHaveBeenCalledTimes(1);
     });
-    expect(ref).toHaveBeenCalledWith(expect.anything(), "universidades/uni-1");
+    expect(deleteRealtimeRecord).toHaveBeenCalledWith("universidades", "uni-1");
     expect(window.alert).toHaveBeenCalledWith("Universidad eliminada correctamente.");
   });
 });

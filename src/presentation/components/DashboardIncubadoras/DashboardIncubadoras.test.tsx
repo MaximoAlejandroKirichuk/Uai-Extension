@@ -1,7 +1,18 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
 import { DashboardIncubadoras } from "./DashboardIncubadoras";
-import { onValue, ref } from "firebase/database";
+import {
+  fetchIncubadoras,
+  setError,
+  setLoading,
+} from "../../../store/slices/incubadoras/incubadorasSlice";
+import type { RealtimeSubscribeOptions } from "../../../firebase/realtimeRepository";
+import type { Incubadora } from "../../../core/entities/incubadora.entity";
+
+const { subscribeToRealtimeList } = vi.hoisted(() => ({
+  subscribeToRealtimeList: vi.fn(),
+}));
 
 let mockState = {
   incubadoras: {
@@ -31,31 +42,15 @@ vi.mock("../../../hooks/hooks", () => ({
   useAppSelector: (selector: (state: typeof mockState) => unknown) => selector(mockState),
 }));
 
-vi.mock("../../../firebase/firebaseConfig", () => ({
-  database: { key: "mock-database" },
+vi.mock("../../../firebase/realtimeRepository", () => ({
+  subscribeToRealtimeList,
 }));
 
-vi.mock("firebase/database", () => ({
-  onValue: vi.fn((_, success) => {
-    success({
-      val: () => ({
-        "inc-1": {
-          nroInscripcion: "1",
-          cuit: "20-12345678-9",
-          nombre: "Incubadora Prueba",
-          provincia: "Buenos Aires",
-          localidad: "La Plata",
-          direccion: "Calle 1",
-          nombreResponsable: "Responsable Prueba",
-          emailResponsable: "responsable@example.com",
-          telefonoResponsable: "123456789",
-        },
-      }),
-    });
-    return vi.fn();
-  }),
-  ref: vi.fn(),
-}));
+const UNSORTED: Incubadora[] = [
+  { id: "b", nroInscripcion: "10", cuit: "-", nombre: "B", provincia: "-", localidad: "-", direccion: "-", nombreResponsable: "-", emailResponsable: "-", telefonoResponsable: "-" },
+  { id: "a", nroInscripcion: "2", cuit: "-", nombre: "A", provincia: "-", localidad: "-", direccion: "-", nombreResponsable: "-", emailResponsable: "-", telefonoResponsable: "-" },
+  { id: "c", nroInscripcion: "5", cuit: "-", nombre: "C", provincia: "-", localidad: "-", direccion: "-", nombreResponsable: "-", emailResponsable: "-", telefonoResponsable: "-" },
+];
 
 describe("DashboardIncubadoras", () => {
   afterEach(cleanup);
@@ -83,7 +78,23 @@ describe("DashboardIncubadoras", () => {
     };
     mockDispatch.mockClear();
     vi.clearAllMocks();
+    subscribeToRealtimeList.mockReturnValue(vi.fn());
   });
+
+  const mountAndCaptureCallbacks = () => {
+    render(<DashboardIncubadoras />);
+
+    const calls = (subscribeToRealtimeList as Mock).mock.calls;
+    const lastCall = calls[calls.length - 1]?.[0] as
+      | RealtimeSubscribeOptions<Incubadora>
+      | undefined;
+
+    if (!lastCall) {
+      throw new Error("subscribeToRealtimeList was not called");
+    }
+
+    return { onData: lastCall.onData, onError: lastCall.onError! };
+  };
 
   it("renders the shared section header and table layout", () => {
     render(<DashboardIncubadoras />);
@@ -94,11 +105,43 @@ describe("DashboardIncubadoras", () => {
     expect(screen.getByRole("cell", { name: /incubadora prueba/i })).toBeInTheDocument();
   });
 
-  it("uses the existing Firebase listener path", () => {
+  it("uses the repository subscription helper for the incubadoras path", () => {
     render(<DashboardIncubadoras />);
 
-    expect(ref).toHaveBeenCalledWith(expect.anything(), "incubadoras");
-    expect(onValue).toHaveBeenCalled();
+    expect(subscribeToRealtimeList).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: "incubadoras",
+        onData: expect.any(Function),
+        onError: expect.any(Function),
+      })
+    );
+  });
+
+  it("sorts incoming items by nroInscripcion before dispatching", () => {
+    const { onData } = mountAndCaptureCallbacks();
+    mockDispatch.mockClear();
+
+    onData(UNSORTED);
+
+    expect(mockDispatch).toHaveBeenCalledWith(
+      fetchIncubadoras([
+        UNSORTED[1], // nro 2
+        UNSORTED[2], // nro 5
+        UNSORTED[0], // nro 10
+      ])
+    );
+  });
+
+  it("dispatches loading and error updates on subscription error", () => {
+    const { onError } = mountAndCaptureCallbacks();
+    mockDispatch.mockClear();
+
+    onError(new Error("connection refused"));
+
+    expect(mockDispatch).toHaveBeenCalledWith(
+      setError("No se pudieron cargar las incubadoras.")
+    );
+    expect(mockDispatch).toHaveBeenCalledWith(setLoading(false));
   });
 
   it("renders the loading state while fetching data", () => {

@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { database, ref, push } from "../../../firebase/firebaseConfig";
 import "../ButtonAdd/ButtonAdd.css";
 import { Crowfunding } from "../../../core/entities/crowfunding.entity";
 import { useModalForm } from "../../../hooks/useModalForm";
 import { ModalForm } from "../ModalForm/ModalForm";
 import { useTimedMessage } from "../../../hooks/useTimedMessage";
+import { createRealtimeRecord } from "../../../firebase/realtimeRepository";
 
 export const ButtonAddCrowfunding = () => {
   const { isOpen, open, close } = useModalForm();
@@ -37,7 +37,7 @@ export const ButtonAddCrowfunding = () => {
     setPending(true);
 
     try {
-      await push(ref(database, "crowfundings"), formData);
+      await createRealtimeRecord("crowfundings", formData);
       setFormData({
         nombrePlataforma: "",
         descripcion: "",

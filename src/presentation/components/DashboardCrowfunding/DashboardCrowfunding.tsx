@@ -4,8 +4,6 @@ import { fetchCrowfundings } from "../../../store/slices/crowfunding/crowfunding
 import { Crowfunding } from "../../../core/entities/crowfunding.entity";
 import { useAppSelector } from "../../../hooks/hooks";
 import { ItemCrowfunding } from "./Crowfunding/ItemCrowfunding";
-import { remove, ref } from "firebase/database";
-import { database } from "../../../firebase/firebaseConfig";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
 import {
   EmptyState,
@@ -14,6 +12,7 @@ import {
   SectionHeader,
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
+import { deleteRealtimeRecord } from "../../../firebase/realtimeRepository";
 
 export const DashboardCrowfunding = () => {
   const { crowfundings, loading, error } = useAppSelector(
@@ -67,7 +66,7 @@ export const DashboardCrowfunding = () => {
     setIsDeleting(true);
 
     try {
-      await remove(ref(database, `crowfundings/${pendingDeleteId}`));
+      await deleteRealtimeRecord("crowfundings", pendingDeleteId);
       setPendingDeleteId(null);
       alert("Proyecto eliminado");
     } catch (error) {

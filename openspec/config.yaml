@@ -7,6 +7,8 @@ context: |
   Architecture: presentation/core(store/hooks/firebase) layout per AGENTS.md.
   Testing: Vitest with jsdom and React Testing Library; type-check via tsc -b, lint via eslint.
   Style: Tailwind + global styles in src/index.css; ESM modules.
+  Formatter: none detected; repo relies on existing code style and linting.
+  Persistence: hybrid (OpenSpec files + Engram copy).
   api.md is the source of truth for backend contracts/enums/auth.
 
 strict_tdd: false

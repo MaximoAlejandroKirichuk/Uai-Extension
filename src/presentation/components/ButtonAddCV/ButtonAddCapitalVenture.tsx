@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { database, ref, push } from "../../../firebase/firebaseConfig";
 import "../ButtonAdd/ButtonAdd.css";
 import { CapitalVentures } from "../../../core/entities/capitalVentures.entity";
 import { useModalForm } from "../../../hooks/useModalForm";
 import { ModalForm } from "../ModalForm/ModalForm";
 import { useTimedMessage } from "../../../hooks/useTimedMessage";
+import { createRealtimeRecord } from "../../../firebase/realtimeRepository";
 
 export const ButtonAddCapitalVentures = () => {
   const { isOpen, open, close } = useModalForm();
@@ -43,7 +43,7 @@ export const ButtonAddCapitalVentures = () => {
     setPending(true);
 
     try {
-      await push(ref(database, "capitalVentures"), formData);
+      await createRealtimeRecord("capitalVentures", formData);
       setFormData({
         nombre: "",
         sitioWeb: "",

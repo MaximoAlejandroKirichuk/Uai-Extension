@@ -3,8 +3,6 @@ import { useAppSelector } from "../../../hooks/hooks";
 import { RootState } from "../../../store/store";
 import { fetchOrganismos } from "../../../store/slices/organismosEstados/organismosEstados";
 import { OrganismoEstado } from "../../../core/entities/organismosEstado.entity";
-import { remove, ref } from "firebase/database";
-import { database } from "../../../firebase/firebaseConfig";
 import { ItemOrganismosEstados } from "./OrganismosEstados/ItemOrganismosEstados";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
 import {
@@ -14,6 +12,7 @@ import {
   SectionHeader,
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
+import { deleteRealtimeRecord } from "../../../firebase/realtimeRepository";
 
 export const DashboardOrganismos = () => {
   const { organismos, loading, error } = useAppSelector(
@@ -66,7 +65,7 @@ export const DashboardOrganismos = () => {
     setIsDeleting(true);
 
     try {
-      await remove(ref(database, `organismosEstado/${pendingDeleteId}`));
+      await deleteRealtimeRecord("organismosEstado", pendingDeleteId);
       setPendingDeleteId(null);
       alert("Organismo eliminado correctamente.");
     } catch (deleteError) {

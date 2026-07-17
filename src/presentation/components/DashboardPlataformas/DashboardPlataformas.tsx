@@ -3,8 +3,6 @@ import { useAppSelector } from "../../../hooks/hooks";
 import { RootState } from "../../../store/store";
 import { fetchPlataformas } from "../../../store/slices/plataforma/plataforma";
 import { Plataforma } from "../../../core/entities/plataformas.entity";
-import { remove, ref } from "firebase/database";
-import { database } from "../../../firebase/firebaseConfig";
 import { ItemPlataforma } from "./Plataformas/ItemPlataforma";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
 import {
@@ -14,6 +12,7 @@ import {
   SectionHeader,
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
+import { deleteRealtimeRecord } from "../../../firebase/realtimeRepository";
 
 export const DashboardPlataformas = () => {
   const { plataformas, loading, error } = useAppSelector(
@@ -68,7 +67,7 @@ export const DashboardPlataformas = () => {
     setIsDeleting(true);
 
     try {
-      await remove(ref(database, `plataformas/${plataformaId}`));
+      await deleteRealtimeRecord("plataformas", plataformaId);
       setPendingDeleteId(null);
       alert("Plataforma eliminada correctamente.");
     } catch (error) {

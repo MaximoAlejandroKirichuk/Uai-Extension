@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "node scripts/check-firebase-boundary.mjs && eslint .",
     "test": "vitest run",
+    "guard:firebase-boundary": "node scripts/check-firebase-boundary.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

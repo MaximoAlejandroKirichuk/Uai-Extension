@@ -4,8 +4,6 @@ import { fetchCapitalVentures } from "../../../store/slices/capitalVentures/capi
 import { CapitalVentures } from "../../../core/entities/capitalVentures.entity";
 import { useAppSelector } from "../../../hooks/hooks";
 import { ItemCapitalVenture } from "./CapitalVentures/ItemCapitalVentures";
-import { remove, ref } from "firebase/database";
-import { database } from "../../../firebase/firebaseConfig";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
 import {
   EmptyState,
@@ -14,6 +12,7 @@ import {
   SectionHeader,
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
+import { deleteRealtimeRecord } from "../../../firebase/realtimeRepository";
 
 export const DashboardCapitalVentures = () => {
   const { capitalVentures, loading, error } = useAppSelector(
@@ -66,7 +65,7 @@ export const DashboardCapitalVentures = () => {
     setIsDeleting(true);
 
     try {
-      await remove(ref(database, `capitalVentures/${pendingDeleteId}`));
+      await deleteRealtimeRecord("capitalVentures", pendingDeleteId);
       setPendingDeleteId(null);
       alert("Registro eliminado");
     } catch (error) {

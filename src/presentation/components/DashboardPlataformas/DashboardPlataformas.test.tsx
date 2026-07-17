@@ -3,8 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardPlataformas } from "./DashboardPlataformas";
 import { fetchPlataformas } from "../../../store/slices/plataforma/plataforma";
-import { remove, ref } from "firebase/database";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
+
+const { deleteRealtimeRecord } = vi.hoisted(() => ({
+  deleteRealtimeRecord: vi.fn(),
+}));
 
 let mockState = {
   plataformas: {
@@ -36,13 +39,8 @@ vi.mock("../../../hooks/useRealtimeList", () => ({
   useRealtimeList: vi.fn(),
 }));
 
-vi.mock("../../../firebase/firebaseConfig", () => ({
-  database: { key: "mock-database" },
-}));
-
-vi.mock("firebase/database", () => ({
-  remove: vi.fn(),
-  ref: vi.fn(),
+vi.mock("../../../firebase/realtimeRepository", () => ({
+  deleteRealtimeRecord,
 }));
 
 describe("DashboardPlataformas", () => {
@@ -127,9 +125,9 @@ describe("DashboardPlataformas", () => {
     await user.click(screen.getByRole("button", { name: /^eliminar$/i }));
 
     await vi.waitFor(() => {
-      expect(remove).toHaveBeenCalledTimes(1);
+      expect(deleteRealtimeRecord).toHaveBeenCalledTimes(1);
     });
-    expect(ref).toHaveBeenCalledWith(expect.anything(), "plataformas/pl-1");
+    expect(deleteRealtimeRecord).toHaveBeenCalledWith("plataformas", "pl-1");
     expect(window.alert).toHaveBeenCalledWith("Plataforma eliminada correctamente.");
   });
 
@@ -141,7 +139,7 @@ describe("DashboardPlataformas", () => {
     await user.click(screen.getByRole("button", { name: /eliminar plataforma prueba/i }));
     await user.click(screen.getByRole("button", { name: /cancelar/i }));
 
-    expect(remove).not.toHaveBeenCalled();
+    expect(deleteRealtimeRecord).not.toHaveBeenCalled();
     expect(screen.queryByRole("dialog", { name: /eliminar plataforma prueba/i })).not.toBeInTheDocument();
   });
 });

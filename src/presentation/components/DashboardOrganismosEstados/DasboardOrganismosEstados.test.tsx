@@ -3,8 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardOrganismos } from "./DasboardOrganismosEstados";
 import { fetchOrganismos } from "../../../store/slices/organismosEstados/organismosEstados";
-import { remove, ref } from "firebase/database";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
+
+const { deleteRealtimeRecord } = vi.hoisted(() => ({
+  deleteRealtimeRecord: vi.fn(),
+}));
 
 let mockState = {
   organismos: {
@@ -38,13 +41,8 @@ vi.mock("../../../hooks/useRealtimeList", () => ({
   useRealtimeList: vi.fn(),
 }));
 
-vi.mock("../../../firebase/firebaseConfig", () => ({
-  database: { key: "mock-database" },
-}));
-
-vi.mock("firebase/database", () => ({
-  remove: vi.fn(),
-  ref: vi.fn(),
+vi.mock("../../../firebase/realtimeRepository", () => ({
+  deleteRealtimeRecord,
 }));
 
 describe("DashboardOrganismos", () => {
@@ -131,9 +129,9 @@ describe("DashboardOrganismos", () => {
     await user.click(screen.getByRole("button", { name: /^eliminar$/i }));
 
     await vi.waitFor(() => {
-      expect(remove).toHaveBeenCalledTimes(1);
+      expect(deleteRealtimeRecord).toHaveBeenCalledTimes(1);
     });
-    expect(ref).toHaveBeenCalledWith(expect.anything(), "organismosEstado/org-1");
+    expect(deleteRealtimeRecord).toHaveBeenCalledWith("organismosEstado", "org-1");
     expect(window.alert).toHaveBeenCalledWith("Organismo eliminado correctamente.");
   });
 
@@ -145,7 +143,7 @@ describe("DashboardOrganismos", () => {
     await user.click(screen.getByRole("button", { name: /eliminar organismo de prueba/i }));
     await user.click(screen.getByRole("button", { name: /cancelar/i }));
 
-    expect(remove).not.toHaveBeenCalled();
+    expect(deleteRealtimeRecord).not.toHaveBeenCalled();
     expect(screen.queryByRole("dialog", { name: /eliminar organismo de prueba/i })).not.toBeInTheDocument();
   });
 });

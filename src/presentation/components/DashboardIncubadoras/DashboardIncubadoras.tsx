@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { DataSnapshot, onValue, ref } from "firebase/database";
 import { Incubadora } from "../../../core/entities/incubadora.entity";
-import { database } from "../../../firebase/firebaseConfig";
+import { subscribeToRealtimeList } from "../../../firebase/realtimeRepository";
 import { useAppDispatch, useAppSelector } from "../../../hooks/hooks";
 import { RootState } from "../../../store/store";
 import {
@@ -54,33 +53,19 @@ export const DashboardIncubadoras = () => {
     dispatch(setLoading(true));
     dispatch(setError(null));
 
-    const incubadorasRef = ref(database, "incubadoras");
+    const unsubscribe = subscribeToRealtimeList<Incubadora>({
+      path: "incubadoras",
+      onData: (items) => {
+        const incubadorasArray = [...items].sort(compareByRegistration);
 
-    const unsubscribe = onValue(
-      incubadorasRef,
-      (snapshot: DataSnapshot) => {
-        const data = snapshot.val();
-
-        if (data) {
-          const incubadorasArray: Incubadora[] = Object.entries(data)
-            .map(([id, value]: [string, unknown]) => ({
-              ...((value ?? {}) as Omit<Incubadora, "id">),
-              id,
-            }))
-            .sort(compareByRegistration);
-
-          dispatch(fetchIncubadoras(incubadorasArray));
-          return;
-        }
-
-        dispatch(fetchIncubadoras([]));
+        dispatch(fetchIncubadoras(incubadorasArray));
       },
-      (error) => {
+      onError: (error) => {
         console.error("Error al obtener incubadoras:", error);
         dispatch(setError("No se pudieron cargar las incubadoras."));
         dispatch(setLoading(false));
-      }
-    );
+      },
+    });
 
     return () => unsubscribe();
   }, [dispatch]);

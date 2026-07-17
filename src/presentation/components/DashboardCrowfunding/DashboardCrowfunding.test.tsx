@@ -3,8 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardCrowfunding } from "./DashboardCrowfunding";
 import { fetchCrowfundings } from "../../../store/slices/crowfunding/crowfundingSlice";
-import { remove, ref } from "firebase/database";
 import { useRealtimeList } from "../../../hooks/useRealtimeList";
+
+const { deleteRealtimeRecord } = vi.hoisted(() => ({
+  deleteRealtimeRecord: vi.fn(),
+}));
 
 let mockState = {
   crowfundings: {
@@ -32,13 +35,8 @@ vi.mock("../../../hooks/useRealtimeList", () => ({
   useRealtimeList: vi.fn(),
 }));
 
-vi.mock("../../../firebase/firebaseConfig", () => ({
-  database: { key: "mock-database" },
-}));
-
-vi.mock("firebase/database", () => ({
-  remove: vi.fn(),
-  ref: vi.fn(),
+vi.mock("../../../firebase/realtimeRepository", () => ({
+  deleteRealtimeRecord,
 }));
 
 describe("DashboardCrowfunding", () => {
@@ -119,9 +117,9 @@ describe("DashboardCrowfunding", () => {
     await user.click(screen.getByRole("button", { name: /^eliminar$/i }));
 
     await waitFor(() => {
-      expect(remove).toHaveBeenCalledTimes(1);
+      expect(deleteRealtimeRecord).toHaveBeenCalledTimes(1);
     });
-    expect(ref).toHaveBeenCalledWith(expect.anything(), "crowfundings/cr-1");
+    expect(deleteRealtimeRecord).toHaveBeenCalledWith("crowfundings", "cr-1");
     expect(window.alert).toHaveBeenCalledWith("Proyecto eliminado");
   });
 
@@ -133,7 +131,7 @@ describe("DashboardCrowfunding", () => {
     await user.click(screen.getByRole("button", { name: /eliminar crowdfunding prueba/i }));
     await user.click(screen.getByRole("button", { name: /cancelar/i }));
 
-    expect(remove).not.toHaveBeenCalled();
+    expect(deleteRealtimeRecord).not.toHaveBeenCalled();
     expect(screen.queryByRole("dialog", { name: /eliminar crowdfunding prueba/i })).not.toBeInTheDocument();
   });
 });
