@@ -6,7 +6,11 @@ import { ModalForm } from "../ModalForm/ModalForm";
 import { useTimedMessage } from "../../../hooks/useTimedMessage";
 import { createRealtimeRecord } from "../../../firebase/realtimeRepository";
 
-export const ButtonAddPlataformas = () => {
+interface ButtonAddPlataformasProps {
+  canWrite?: boolean;
+}
+
+export const ButtonAddPlataformas = ({ canWrite = true }: ButtonAddPlataformasProps) => {
   const { isOpen, open, close } = useModalForm();
   const { message, showMessage, clearMessage } = useTimedMessage();
   const [pending, setPending] = useState(false);
@@ -41,7 +45,7 @@ export const ButtonAddPlataformas = () => {
     setPending(true);
 
     try {
-      await createRealtimeRecord("plataformas", formData);
+      await createRealtimeRecord("plataformas", formData, { canWrite });
       setFormData({
         nombrePlataforma: "",
         descripcion: "",
@@ -72,6 +76,10 @@ export const ButtonAddPlataformas = () => {
     clearMessage();
     close();
   };
+
+  if (!canWrite) {
+    return null;
+  }
 
   return (
     <>

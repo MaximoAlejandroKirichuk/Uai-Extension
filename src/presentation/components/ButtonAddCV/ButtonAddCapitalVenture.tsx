@@ -6,7 +6,11 @@ import { ModalForm } from "../ModalForm/ModalForm";
 import { useTimedMessage } from "../../../hooks/useTimedMessage";
 import { createRealtimeRecord } from "../../../firebase/realtimeRepository";
 
-export const ButtonAddCapitalVentures = () => {
+interface ButtonAddCapitalVenturesProps {
+  canWrite?: boolean;
+}
+
+export const ButtonAddCapitalVentures = ({ canWrite = true }: ButtonAddCapitalVenturesProps) => {
   const { isOpen, open, close } = useModalForm();
   const { message, showMessage, clearMessage } = useTimedMessage();
   const [pending, setPending] = useState(false);
@@ -43,7 +47,7 @@ export const ButtonAddCapitalVentures = () => {
     setPending(true);
 
     try {
-      await createRealtimeRecord("capitalVentures", formData);
+      await createRealtimeRecord("capitalVentures", formData, { canWrite });
       setFormData({
         nombre: "",
         sitioWeb: "",
@@ -76,6 +80,10 @@ export const ButtonAddCapitalVentures = () => {
     clearMessage();
     close();
   };
+
+  if (!canWrite) {
+    return null;
+  }
 
   return (
     <>

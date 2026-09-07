@@ -18,7 +18,11 @@ import {
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
 
-export const DashboardCrowfunding = () => {
+interface DashboardCrowfundingProps {
+  canWrite?: boolean;
+}
+
+export const DashboardCrowfunding = ({ canWrite = true }: DashboardCrowfundingProps) => {
   const { crowfundings, loading, error } = useAppSelector(
     (state: RootState) => state.crowfundings
   );
@@ -47,6 +51,7 @@ export const DashboardCrowfunding = () => {
     getId: (proyecto) => proyecto.id!,
     onSuccessMessage: "Proyecto eliminado",
     onErrorMessage: "Error al eliminar",
+    canWrite,
   });
 
   const crowfundingsFiltrados = useMemo(() => {
@@ -112,6 +117,7 @@ export const DashboardCrowfunding = () => {
                 <ItemCrowfunding
                   id={proyecto.id!}
                   onDelete={requestDelete}
+                  canDelete={canWrite}
                   key={proyecto.id}
                   crowfunding={proyecto}
                 />

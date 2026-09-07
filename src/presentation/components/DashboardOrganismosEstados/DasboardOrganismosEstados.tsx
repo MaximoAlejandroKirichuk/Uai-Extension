@@ -18,7 +18,11 @@ import {
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
 
-export const DashboardOrganismos = () => {
+interface DashboardOrganismosProps {
+  canWrite?: boolean;
+}
+
+export const DashboardOrganismos = ({ canWrite = true }: DashboardOrganismosProps) => {
   const { organismos, loading, error } = useAppSelector(
     (state: RootState) => state.organismos
   );
@@ -47,6 +51,7 @@ export const DashboardOrganismos = () => {
     getId: (organismo) => organismo.id!,
     onSuccessMessage: "Organismo eliminado correctamente.",
     onErrorMessage: "Error al eliminar el organismo.",
+    canWrite,
   });
 
   const organismosFiltrados = useMemo(() => {
@@ -112,6 +117,7 @@ export const DashboardOrganismos = () => {
                   id={organismo.id!}
                   organismo={organismo}
                   onDelete={requestDelete}
+                  canDelete={canWrite}
                 />
               ))}
             </div>

@@ -1,16 +1,22 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Home } from "./Home";
+
+const { useAppSelectorMock } = vi.hoisted(() => ({
+  useAppSelectorMock: vi.fn(),
+}));
 
 afterEach(cleanup);
 
 vi.mock("../components/DashboardUniversidades/DasboardUniversidades", () => ({
-  DashboardUniversidades: () => <div>Panel de universidades</div>,
+  DashboardUniversidades: ({ canWrite }: { canWrite: boolean }) => (
+    <div>Panel de universidades {canWrite ? "writable" : "readonly"}</div>
+  ),
 }));
 
 vi.mock("../components/ButtonAdd/ButtonAdd", () => ({
-  ButtonAdd: () => <div>Agregar universidad</div>,
+  ButtonAdd: ({ canWrite }: { canWrite: boolean }) => canWrite ? <div>Agregar universidad</div> : null,
 }));
 
 vi.mock("../components/DashboardCrowfunding/DashboardCrowfunding", () => ({
@@ -18,7 +24,8 @@ vi.mock("../components/DashboardCrowfunding/DashboardCrowfunding", () => ({
 }));
 
 vi.mock("../components/ButtonAddCrowfunding/ButtonAddCrowfunding", () => ({
-  ButtonAddCrowfunding: () => <div>Agregar financiamiento colectivo</div>,
+  ButtonAddCrowfunding: ({ canWrite }: { canWrite: boolean }) =>
+    canWrite ? <div>Agregar financiamiento colectivo</div> : null,
 }));
 
 vi.mock("../components/DashboardCapitalVentures/DashboardCapitalVentures", () => ({
@@ -26,7 +33,8 @@ vi.mock("../components/DashboardCapitalVentures/DashboardCapitalVentures", () =>
 }));
 
 vi.mock("../components/ButtonAddCV/ButtonAddCapitalVenture", () => ({
-  ButtonAddCapitalVentures: () => <div>Agregar capital de riesgo</div>,
+  ButtonAddCapitalVentures: ({ canWrite }: { canWrite: boolean }) =>
+    canWrite ? <div>Agregar capital de riesgo</div> : null,
 }));
 
 vi.mock("../components/DashboardPlataformas/DashboardPlataformas", () => ({
@@ -34,7 +42,8 @@ vi.mock("../components/DashboardPlataformas/DashboardPlataformas", () => ({
 }));
 
 vi.mock("../components/ButtonAddPlataformas/ButtonAddPlataformas", () => ({
-  ButtonAddPlataformas: () => <div>Agregar plataforma</div>,
+  ButtonAddPlataformas: ({ canWrite }: { canWrite: boolean }) =>
+    canWrite ? <div>Agregar plataforma</div> : null,
 }));
 
 vi.mock("../components/DashboardOrganismosEstados/DasboardOrganismosEstados", () => ({
@@ -42,7 +51,8 @@ vi.mock("../components/DashboardOrganismosEstados/DasboardOrganismosEstados", ()
 }));
 
 vi.mock("../components/ButtonAddOrganismos/ButtonAddOrganismos", () => ({
-  ButtonAddOrganismoEstado: () => <div>Agregar organismo estatal</div>,
+  ButtonAddOrganismoEstado: ({ canWrite }: { canWrite: boolean }) =>
+    canWrite ? <div>Agregar organismo estatal</div> : null,
 }));
 
 vi.mock("../components/DashboardEventos/DashboardEventos", () => ({
@@ -53,7 +63,25 @@ vi.mock("../components/DashboardIncubadoras/DashboardIncubadoras", () => ({
   DashboardIncubadoras: () => <div>Panel de incubadoras</div>,
 }));
 
+vi.mock("../../hooks/hooks", () => ({
+  useAppSelector: (selector: unknown) => useAppSelectorMock(selector),
+}));
+
 describe("Home", () => {
+  afterEach(() => {
+    useAppSelectorMock.mockReset();
+  });
+
+  beforeEach(() => {
+    useAppSelectorMock.mockReturnValue({
+      emailUser: "staff@uai.edu.ar",
+      token: "token",
+      localId: "uid",
+      readonly: false,
+      canWrite: true,
+    });
+  });
+
   it("renders the Spanish portal shell and navigation", () => {
     render(<Home />);
 
@@ -75,5 +103,20 @@ describe("Home", () => {
     await user.click(button);
     expect(screen.getByText("Panel de financiamiento colectivo")).toBeInTheDocument();
     expect(screen.queryByText("Panel de capital de riesgo")).not.toBeInTheDocument();
+  });
+
+  it("passes read-only capability so write affordances are unavailable while data modules render", () => {
+    useAppSelectorMock.mockReturnValue({
+      emailUser: "ciiti-test@uai.edu.ar",
+      token: "token",
+      localId: "uid",
+      readonly: false,
+      canWrite: true,
+    });
+
+    render(<Home />);
+
+    expect(screen.getByText(/panel de universidades readonly/i)).toBeInTheDocument();
+    expect(screen.queryByText(/agregar universidad/i)).not.toBeInTheDocument();
   });
 });

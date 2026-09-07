@@ -5,6 +5,7 @@ interface DashboardItemCardProps {
   deleteLabel: string;
   onDelete: () => void;
   children: ReactNode;
+  canDelete?: boolean;
   footer?: ReactNode;
 }
 
@@ -13,6 +14,7 @@ export const DashboardItemCard = ({
   deleteLabel,
   onDelete,
   children,
+  canDelete = true,
   footer,
 }: DashboardItemCardProps) => {
   return (
@@ -21,7 +23,7 @@ export const DashboardItemCard = ({
         <h2 className="text-lg font-semibold tracking-tight text-[color:var(--color-text)]">
           {title}
         </h2>
-        <DeleteIconButton label={deleteLabel} onClick={onDelete} />
+        {canDelete ? <DeleteIconButton label={deleteLabel} onClick={onDelete} /> : null}
       </div>
 
       <div className="space-y-3 text-sm leading-6 text-[color:var(--color-text-muted)]">

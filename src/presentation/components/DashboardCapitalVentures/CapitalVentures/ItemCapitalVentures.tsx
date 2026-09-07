@@ -5,14 +5,16 @@ interface Props {
   venture: CapitalVentures;
   id: string;
   onDelete: (id: string) => void;
+  canDelete?: boolean;
 }
 
-export const ItemCapitalVenture = ({ venture, id, onDelete }: Props) => {
+export const ItemCapitalVenture = ({ venture, id, onDelete, canDelete = true }: Props) => {
   return (
     <DashboardItemCard
       title={venture.nombre}
       deleteLabel={`Eliminar ${venture.nombre}`}
       onDelete={() => onDelete(id)}
+      canDelete={canDelete}
     >
       <p>{venture.comentario}</p>
 

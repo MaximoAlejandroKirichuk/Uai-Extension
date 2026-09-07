@@ -6,7 +6,11 @@ import { ModalForm } from "../ModalForm/ModalForm";
 import { useTimedMessage } from "../../../hooks/useTimedMessage";
 import { createRealtimeRecord } from "../../../firebase/realtimeRepository";
 
-export const ButtonAddCrowfunding = () => {
+interface ButtonAddCrowfundingProps {
+  canWrite?: boolean;
+}
+
+export const ButtonAddCrowfunding = ({ canWrite = true }: ButtonAddCrowfundingProps) => {
   const { isOpen, open, close } = useModalForm();
   const { message, showMessage, clearMessage } = useTimedMessage();
   const [pending, setPending] = useState(false);
@@ -37,7 +41,7 @@ export const ButtonAddCrowfunding = () => {
     setPending(true);
 
     try {
-      await createRealtimeRecord("crowfundings", formData);
+      await createRealtimeRecord("crowfundings", formData, { canWrite });
       setFormData({
         nombrePlataforma: "",
         descripcion: "",
@@ -64,6 +68,10 @@ export const ButtonAddCrowfunding = () => {
     clearMessage();
     close();
   };
+
+  if (!canWrite) {
+    return null;
+  }
 
   return (
     <>

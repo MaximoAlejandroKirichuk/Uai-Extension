@@ -87,7 +87,10 @@ describe("useAuth", () => {
         user: {
           email: "test@example.com",
           uid: "uid-1",
-          getIdToken: vi.fn().mockResolvedValue("token-123"),
+          getIdTokenResult: vi.fn().mockResolvedValue({
+            token: "token-123",
+            claims: {},
+          }),
         },
       });
       await pendingSignIn;
@@ -100,6 +103,8 @@ describe("useAuth", () => {
           emailUser: "test@example.com",
           token: "token-123",
           localId: "uid-1",
+          readonly: false,
+          canWrite: true,
         },
       });
     });
@@ -125,6 +130,134 @@ describe("useAuth", () => {
     });
 
     expect(screen.getByRole("button", { name: /login/i })).not.toBeDisabled();
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it("maps the readonly claim to a read-only session", async () => {
+    signInMock.mockResolvedValue({
+      user: {
+        email: "readonly@example.com",
+        uid: "uid-readonly",
+        getIdTokenResult: vi.fn().mockResolvedValue({
+          token: "readonly-token",
+          claims: { readonly: true },
+        }),
+      },
+    });
+
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { name: "email", value: "readonly@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { name: "password", value: "secret" },
+    });
+    fireEvent.submit(screen.getByRole("button", { name: /login/i }).closest("form") as HTMLFormElement);
+
+    await waitFor(() => {
+      expect(dispatchMock).toHaveBeenCalledWith({
+        type: "user/setUser",
+        payload: {
+          emailUser: "readonly@example.com",
+          token: "readonly-token",
+          localId: "uid-readonly",
+          readonly: true,
+          canWrite: false,
+        },
+      });
+    });
+  });
+
+  it("forces the demo account read-only even when the readonly claim is missing", async () => {
+    signInMock.mockResolvedValue({
+      user: {
+        email: "ciiti-test@uai.edu.ar",
+        uid: "uid-demo",
+        getIdTokenResult: vi.fn().mockResolvedValue({
+          token: "demo-token",
+          claims: {},
+        }),
+      },
+    });
+
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { name: "email", value: "ciiti-test@uai.edu.ar" },
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { name: "password", value: "secret" },
+    });
+    fireEvent.submit(screen.getByRole("button", { name: /login/i }).closest("form") as HTMLFormElement);
+
+    await waitFor(() => {
+      expect(dispatchMock).toHaveBeenCalledWith({
+        type: "user/setUser",
+        payload: {
+          emailUser: "ciiti-test@uai.edu.ar",
+          token: "demo-token",
+          localId: "uid-demo",
+          readonly: true,
+          canWrite: false,
+        },
+      });
+    });
+  });
+
+  it("force-refreshes the ID token so freshly assigned custom claims are not stale", async () => {
+    const getIdTokenResultMock = vi.fn().mockResolvedValue({
+      token: "fresh-token",
+      claims: { readonly: true },
+    });
+
+    signInMock.mockResolvedValue({
+      user: {
+        email: "readonly@example.com",
+        uid: "uid-readonly",
+        getIdTokenResult: getIdTokenResultMock,
+      },
+    });
+
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { name: "email", value: "readonly@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { name: "password", value: "secret" },
+    });
+    fireEvent.submit(screen.getByRole("button", { name: /login/i }).closest("form") as HTMLFormElement);
+
+    await waitFor(() => {
+      expect(getIdTokenResultMock).toHaveBeenCalledWith(true);
+    });
+  });
+
+  it("surfaces an inline error when token claim loading fails", async () => {
+    signInMock.mockResolvedValue({
+      user: {
+        email: "test@example.com",
+        uid: "uid-1",
+        getIdTokenResult: vi.fn().mockRejectedValue(new Error("claims unavailable")),
+      },
+    });
+
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { name: "email", value: "test@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { name: "password", value: "secret" },
+    });
+    fireEvent.submit(screen.getByRole("button", { name: /login/i }).closest("form") as HTMLFormElement);
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(/credenciales incorrectas/i);
+    });
+
+    expect(dispatchMock).not.toHaveBeenCalled();
     expect(navigateMock).not.toHaveBeenCalled();
   });
 });

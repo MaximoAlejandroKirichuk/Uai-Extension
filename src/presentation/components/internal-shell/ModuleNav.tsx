@@ -7,7 +7,7 @@ export interface HomeModuleConfig {
 }
 
 interface ModuleNavProps {
-  modules: HomeModuleConfig[];
+  modules: Array<Pick<HomeModuleConfig, "key" | "label">>;
   activeKey: string;
   onChange: (key: string) => void;
 }

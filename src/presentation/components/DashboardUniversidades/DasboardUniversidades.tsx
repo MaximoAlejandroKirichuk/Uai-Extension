@@ -18,7 +18,11 @@ import {
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
 
-export const DashboardUniversidades = () => {
+interface DashboardUniversidadesProps {
+  canWrite?: boolean;
+}
+
+export const DashboardUniversidades = ({ canWrite = true }: DashboardUniversidadesProps) => {
   const { universidades, loading, error } = useAppSelector(
     (state: RootState) => state.universidades
   );
@@ -47,6 +51,7 @@ export const DashboardUniversidades = () => {
     getId: (uni) => uni.id!,
     onSuccessMessage: "Universidad eliminada correctamente.",
     onErrorMessage: "Error al eliminar la universidad.",
+    canWrite,
   });
 
   const universidadesFiltradas = useMemo(() => {
@@ -130,6 +135,7 @@ export const DashboardUniversidades = () => {
                 <ItemUniversidad
                   id={uni.id!}
                   onDelete={requestDelete}
+                  canDelete={canWrite}
                   key={uni.id}
                   uni={uni}
                 />

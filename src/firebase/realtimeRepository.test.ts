@@ -40,7 +40,7 @@ describe("realtimeRepository", () => {
   });
 
   it("creates a realtime record at the requested path", async () => {
-    await createRealtimeRecord("universidades", { nombre: "Universidad Prueba" });
+    await createRealtimeRecord("universidades", { nombre: "Universidad Prueba" }, { canWrite: true });
 
     expect(mocks.refMock).toHaveBeenCalledWith(mocks.databaseMock, "universidades");
     expect(mocks.pushMock).toHaveBeenCalledWith(
@@ -50,13 +50,31 @@ describe("realtimeRepository", () => {
   });
 
   it("deletes a realtime record from the requested path", async () => {
-    await deleteRealtimeRecord("universidades", "uni-1");
+    await deleteRealtimeRecord("universidades", "uni-1", { canWrite: true });
 
     expect(mocks.refMock).toHaveBeenCalledWith(mocks.databaseMock, "universidades/uni-1");
     expect(mocks.removeMock).toHaveBeenCalledWith({
       database: mocks.databaseMock,
       path: "universidades/uni-1",
     });
+  });
+
+  it("rejects read-only creates before Firebase push", async () => {
+    await expect(
+      createRealtimeRecord("universidades", { nombre: "Universidad Prueba" }, { canWrite: false })
+    ).rejects.toThrow(/readonly sessions/i);
+
+    expect(mocks.refMock).not.toHaveBeenCalled();
+    expect(mocks.pushMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects read-only deletes before Firebase remove", async () => {
+    await expect(deleteRealtimeRecord("universidades", "uni-1", { canWrite: false })).rejects.toThrow(
+      /readonly sessions/i
+    );
+
+    expect(mocks.refMock).not.toHaveBeenCalled();
+    expect(mocks.removeMock).not.toHaveBeenCalled();
   });
 
   it("subscribes to a list and maps snapshot values into items", () => {

@@ -17,6 +17,16 @@ export interface RealtimeSubscribeOptions<T> {
   onError?: (error: unknown) => void;
 }
 
+export interface WriteGuard {
+  canWrite: boolean;
+}
+
+const assertCanWrite = ({ canWrite }: WriteGuard) => {
+  if (!canWrite) {
+    throw new Error("Readonly sessions cannot modify realtime data.");
+  }
+};
+
 const mapSnapshotValueToItem = <T>(value: unknown, id: string, mapItem?: (value: unknown, id: string) => T) => {
   if (mapItem) {
     return mapItem(value, id);
@@ -28,11 +38,13 @@ const mapSnapshotValueToItem = <T>(value: unknown, id: string, mapItem?: (value:
   } as T;
 };
 
-export const createRealtimeRecord = async <T>(path: RealtimePath | string, payload: T) => {
+export const createRealtimeRecord = async <T>(path: RealtimePath | string, payload: T, guard: WriteGuard) => {
+  assertCanWrite(guard);
   await push(ref(database, path), payload);
 };
 
-export const deleteRealtimeRecord = async (path: RealtimePath | string, id: string) => {
+export const deleteRealtimeRecord = async (path: RealtimePath | string, id: string, guard: WriteGuard) => {
+  assertCanWrite(guard);
   await remove(ref(database, `${path}/${id}`));
 };
 

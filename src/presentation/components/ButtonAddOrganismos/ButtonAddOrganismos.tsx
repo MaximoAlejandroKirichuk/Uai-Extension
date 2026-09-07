@@ -6,7 +6,11 @@ import { ModalForm } from "../ModalForm/ModalForm";
 import { useTimedMessage } from "../../../hooks/useTimedMessage";
 import { createRealtimeRecord } from "../../../firebase/realtimeRepository";
 
-export const ButtonAddOrganismoEstado = () => {
+interface ButtonAddOrganismoEstadoProps {
+  canWrite?: boolean;
+}
+
+export const ButtonAddOrganismoEstado = ({ canWrite = true }: ButtonAddOrganismoEstadoProps) => {
   const { isOpen, open, close } = useModalForm();
   const { message, showMessage, clearMessage } = useTimedMessage();
   const [pending, setPending] = useState(false);
@@ -45,7 +49,7 @@ export const ButtonAddOrganismoEstado = () => {
     setPending(true);
 
     try {
-      await createRealtimeRecord("organismosEstado", formData);
+      await createRealtimeRecord("organismosEstado", formData, { canWrite });
       setFormData({
         nombre: "",
         area: "",
@@ -78,6 +82,10 @@ export const ButtonAddOrganismoEstado = () => {
     clearMessage();
     close();
   };
+
+  if (!canWrite) {
+    return null;
+  }
 
   return (
     <>

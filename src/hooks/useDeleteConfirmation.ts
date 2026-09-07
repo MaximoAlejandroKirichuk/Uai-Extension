@@ -5,12 +5,22 @@ interface UseDeleteConfirmationOptions<T> {
   path: string;
   items: T[];
   getId: (item: T) => string;
+  canWrite: boolean;
   onSuccessMessage: string;
   onErrorMessage: string;
+  readonlyErrorMessage?: string;
 }
 
 export const useDeleteConfirmation = <T,>(options: UseDeleteConfirmationOptions<T>) => {
-  const { getId, items, onErrorMessage, onSuccessMessage, path } = options;
+  const {
+    canWrite,
+    getId,
+    items,
+    onErrorMessage,
+    onSuccessMessage,
+    path,
+    readonlyErrorMessage = "This session is read-only. Changes are disabled.",
+  } = options;
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,10 +37,16 @@ export const useDeleteConfirmation = <T,>(options: UseDeleteConfirmationOptions<
         return;
       }
 
+      if (!canWrite) {
+        setPendingDeleteId(null);
+        setError(readonlyErrorMessage);
+        return;
+      }
+
       setPendingDeleteId(id);
       setError(null);
     },
-    [isDeleting]
+    [canWrite, isDeleting, readonlyErrorMessage]
   );
 
   const cancelDelete = useCallback(() => {
@@ -48,11 +64,16 @@ export const useDeleteConfirmation = <T,>(options: UseDeleteConfirmationOptions<
       return;
     }
 
+    if (!canWrite) {
+      setError(readonlyErrorMessage);
+      return;
+    }
+
     setIsDeleting(true);
     setError(null);
 
     try {
-      await deleteRealtimeRecord(path, pendingDeleteId);
+      await deleteRealtimeRecord(path, pendingDeleteId, { canWrite });
       setPendingDeleteId(null);
       alert(onSuccessMessage);
     } catch (deleteError) {
@@ -62,7 +83,7 @@ export const useDeleteConfirmation = <T,>(options: UseDeleteConfirmationOptions<
     } finally {
       setIsDeleting(false);
     }
-  }, [isDeleting, onErrorMessage, onSuccessMessage, pendingDeleteId, path]);
+  }, [canWrite, isDeleting, onErrorMessage, onSuccessMessage, pendingDeleteId, path, readonlyErrorMessage]);
 
   return {
     selectedItem,

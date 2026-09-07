@@ -18,7 +18,11 @@ import {
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
 
-export const DashboardCapitalVentures = () => {
+interface DashboardCapitalVenturesProps {
+  canWrite?: boolean;
+}
+
+export const DashboardCapitalVentures = ({ canWrite = true }: DashboardCapitalVenturesProps) => {
   const { capitalVentures, loading, error } = useAppSelector(
     (state: RootState) => state.capitalVentures
   );
@@ -47,6 +51,7 @@ export const DashboardCapitalVentures = () => {
     getId: (venture) => venture.id!,
     onSuccessMessage: "Registro eliminado",
     onErrorMessage: "Error al eliminar",
+    canWrite,
   });
 
   const filtrados = useMemo(() => {
@@ -112,6 +117,7 @@ export const DashboardCapitalVentures = () => {
                   id={venture.id!}
                   venture={venture}
                   onDelete={requestDelete}
+                  canDelete={canWrite}
                 />
               ))}
             </div>

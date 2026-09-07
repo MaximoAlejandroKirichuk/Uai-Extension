@@ -5,14 +5,16 @@ interface Props {
   crowfunding: Crowfunding;
   id: string;
   onDelete: (id: string) => void;
+  canDelete?: boolean;
 }
 
-export const ItemCrowfunding = ({ crowfunding, id, onDelete }: Props) => {
+export const ItemCrowfunding = ({ crowfunding, id, onDelete, canDelete = true }: Props) => {
   return (
     <DashboardItemCard
       title={crowfunding.nombrePlataforma}
       deleteLabel={`Eliminar ${crowfunding.nombrePlataforma}`}
       onDelete={() => onDelete(id)}
+      canDelete={canDelete}
     >
       <p>{crowfunding.descripcion}</p>
 

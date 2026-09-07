@@ -18,7 +18,11 @@ import {
 } from "../internal-shell";
 import { ConfirmAction } from "../confirmation";
 
-export const DashboardPlataformas = () => {
+interface DashboardPlataformasProps {
+  canWrite?: boolean;
+}
+
+export const DashboardPlataformas = ({ canWrite = true }: DashboardPlataformasProps) => {
   const { plataformas, loading, error } = useAppSelector(
     (state: RootState) => state.plataformas
   );
@@ -47,6 +51,7 @@ export const DashboardPlataformas = () => {
     getId: (plataforma) => plataforma.id!,
     onSuccessMessage: "Plataforma eliminada correctamente.",
     onErrorMessage: "Error al eliminar la plataforma.",
+    canWrite,
   });
 
   const plataformasFiltradas = useMemo(() => {
@@ -114,6 +119,7 @@ export const DashboardPlataformas = () => {
                   id={plataforma.id!}
                   plataforma={plataforma}
                   onDelete={requestDelete}
+                  canDelete={canWrite}
                 />
               ))}
             </div>

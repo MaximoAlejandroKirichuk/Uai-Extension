@@ -37,6 +37,7 @@ describe("useDeleteConfirmation", () => {
         path: "universidades",
         items: ITEMS,
         getId: (item) => item.id,
+        canWrite: true,
         onSuccessMessage: "Deleted",
         onErrorMessage: "Delete failed",
       })
@@ -70,6 +71,7 @@ describe("useDeleteConfirmation", () => {
         path: "universidades",
         items: ITEMS,
         getId: (item) => item.id,
+        canWrite: true,
         onSuccessMessage: "Deleted",
         onErrorMessage: "Delete failed",
       })
@@ -91,7 +93,7 @@ describe("useDeleteConfirmation", () => {
     });
 
     expect(result.current.selectedItem).toEqual(ITEMS[0]);
-    expect(deleteRealtimeRecord).toHaveBeenCalledTimes(1);
+    expect(deleteRealtimeRecord).toHaveBeenCalledWith("universidades", "uni-1", { canWrite: true });
 
     resolveDelete!();
 
@@ -112,6 +114,7 @@ describe("useDeleteConfirmation", () => {
         path: "universidades",
         items: ITEMS,
         getId: (item) => item.id,
+        canWrite: true,
         onSuccessMessage: "Deleted",
         onErrorMessage: "Delete failed",
       })
@@ -129,5 +132,27 @@ describe("useDeleteConfirmation", () => {
     expect(result.current.selectedItem).toEqual(ITEMS[0]);
     expect(result.current.error).toBe("Delete failed");
     expect(window.alert).toHaveBeenCalledWith("Delete failed");
+  });
+
+  it("blocks read-only delete requests before opening confirmation", () => {
+    const { result } = renderHook(() =>
+      useDeleteConfirmation({
+        path: "universidades",
+        items: ITEMS,
+        getId: (item) => item.id,
+        canWrite: false,
+        onSuccessMessage: "Deleted",
+        onErrorMessage: "Delete failed",
+        readonlyErrorMessage: "Read-only users cannot delete records.",
+      })
+    );
+
+    act(() => {
+      result.current.requestDelete("uni-1");
+    });
+
+    expect(result.current.isOpen).toBe(false);
+    expect(result.current.error).toBe("Read-only users cannot delete records.");
+    expect(deleteRealtimeRecord).not.toHaveBeenCalled();
   });
 });

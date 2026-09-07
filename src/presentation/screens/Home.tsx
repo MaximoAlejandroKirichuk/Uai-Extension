@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { DashboardUniversidades } from "../components/DashboardUniversidades/DasboardUniversidades";
 import { ButtonAdd } from "../components/ButtonAdd/ButtonAdd";
 import { DashboardCrowfunding } from "../components/DashboardCrowfunding/DashboardCrowfunding";
@@ -16,55 +16,62 @@ import {
   ModuleNav,
   type HomeModuleConfig,
 } from "../components/internal-shell";
+import { useAppSelector } from "../../hooks/hooks";
+import type { RootState } from "../../store/store";
+import { resolveCanWrite } from "../../core/entities/session-access";
 
-const HOME_MODULES: HomeModuleConfig[] = [
+type WritableHomeModuleConfig = Omit<HomeModuleConfig, "render"> & {
+  render: (canWrite: boolean) => ReactNode;
+};
+
+const HOME_MODULES: WritableHomeModuleConfig[] = [
   {
     key: "universidades",
     label: "Universidades",
-    render: () => (
+    render: (canWrite) => (
       <>
-        <DashboardUniversidades />
-        <ButtonAdd />
+        <DashboardUniversidades canWrite={canWrite} />
+        <ButtonAdd canWrite={canWrite} />
       </>
     ),
   },
   {
     key: "crowfunding",
     label: "Financiamiento colectivo",
-    render: () => (
+    render: (canWrite) => (
       <>
-        <DashboardCrowfunding />
-        <ButtonAddCrowfunding />
+        <DashboardCrowfunding canWrite={canWrite} />
+        <ButtonAddCrowfunding canWrite={canWrite} />
       </>
     ),
   },
   {
     key: "capitalVentures",
     label: "Capital de riesgo",
-    render: () => (
+    render: (canWrite) => (
       <>
-        <DashboardCapitalVentures />
-        <ButtonAddCapitalVentures />
+        <DashboardCapitalVentures canWrite={canWrite} />
+        <ButtonAddCapitalVentures canWrite={canWrite} />
       </>
     ),
   },
   {
     key: "Plataformas",
     label: "Plataformas",
-    render: () => (
+    render: (canWrite) => (
       <>
-        <DashboardPlataformas />
-        <ButtonAddPlataformas />
+        <DashboardPlataformas canWrite={canWrite} />
+        <ButtonAddPlataformas canWrite={canWrite} />
       </>
     ),
   },
   {
     key: "Organismos estados",
     label: "Organismos estatales",
-    render: () => (
+    render: (canWrite) => (
       <>
-        <DashboardOrganismos />
-        <ButtonAddOrganismoEstado />
+        <DashboardOrganismos canWrite={canWrite} />
+        <ButtonAddOrganismoEstado canWrite={canWrite} />
       </>
     ),
   },
@@ -82,6 +89,13 @@ const HOME_MODULES: HomeModuleConfig[] = [
 
 export const Home = () => {
   const [active, setActive] = useState(HOME_MODULES[0].key);
+  // Derive write capability from the session user, preferring the centralized
+  // demo-email guard so the readonly demo account stays readonly even when the
+  // Firebase custom claim is missing or stale.
+  const user = useAppSelector((state: RootState) => state.user.value.user);
+  const canWrite = user
+    ? resolveCanWrite(user.emailUser, user.readonly)
+    : false;
 
   const activeModule = HOME_MODULES.find((module) => module.key === active) ?? HOME_MODULES[0];
 
@@ -93,7 +107,7 @@ export const Home = () => {
         <ModuleNav modules={HOME_MODULES} activeKey={activeModule.key} onChange={setActive} />
       }
     >
-      <div className="space-y-6">{activeModule.render()}</div>
+      <div className="space-y-6">{activeModule.render(canWrite)}</div>
     </InternalPortalShell>
   );
 };

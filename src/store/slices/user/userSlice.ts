@@ -22,7 +22,9 @@ export const userSlice = createSlice({
            state.value.user = {
             emailUser: payload.emailUser,
             localId: payload.localId,
-            token: payload.token
+            token: payload.token,
+            readonly: payload.readonly,
+            canWrite: payload.canWrite,
            }
         },
         clearUser: (state) => {

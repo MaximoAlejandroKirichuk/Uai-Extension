@@ -4,6 +4,10 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase/firebaseConfig";
 import { User } from "../core/entities/user.entity";
+import {
+  resolveCanWrite,
+  resolveReadonly,
+} from "../core/entities/session-access";
 import { setUser } from "../store/slices/user/userSlice";
 
 export const useAuth = () => {
@@ -42,12 +46,18 @@ export const useAuth = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const userFirebase = userCredential.user;
-      const token = await userFirebase.getIdToken();
+      // Force a token refresh so freshly assigned custom claims (e.g. `readonly`)
+      // are always read from the backend instead of a stale cached ID token.
+      const tokenResult = await userFirebase.getIdTokenResult(true);
+      const emailUser = userFirebase.email || "";
+      const claimsReadonly = tokenResult.claims.readonly === true;
 
       const userMapped: User = {
-        emailUser: userFirebase.email || "",
-        token,
+        emailUser,
+        token: tokenResult.token,
         localId: userFirebase.uid,
+        readonly: resolveReadonly(emailUser, claimsReadonly),
+        canWrite: resolveCanWrite(emailUser, claimsReadonly),
       };
 
       dispatch(setUser(userMapped));
