@@ -55,10 +55,6 @@ vi.mock("../components/ButtonAddOrganismos/ButtonAddOrganismos", () => ({
     canWrite ? <div>Agregar organismo estatal</div> : null,
 }));
 
-vi.mock("../components/DashboardEventos/DashboardEventos", () => ({
-  DashboardEventos: () => <div>Panel de eventos</div>,
-}));
-
 vi.mock("../components/DashboardIncubadoras/DashboardIncubadoras", () => ({
   DashboardIncubadoras: () => <div>Panel de incubadoras</div>,
 }));
@@ -91,6 +87,8 @@ describe("Home", () => {
     expect(screen.getByText(/extensión uai/i)).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /módulos internos/i })).toBeInTheDocument();
     expect(screen.getAllByText(/^Módulo$/i).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /eventos/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/panel de eventos/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Internal portal/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Select a module/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Module$/i)).not.toBeInTheDocument();

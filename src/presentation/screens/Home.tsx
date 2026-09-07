@@ -9,7 +9,6 @@ import { DashboardPlataformas } from "../components/DashboardPlataformas/Dashboa
 import { ButtonAddPlataformas } from "../components/ButtonAddPlataformas/ButtonAddPlataformas";
 import { DashboardOrganismos } from "../components/DashboardOrganismosEstados/DasboardOrganismosEstados";
 import { ButtonAddOrganismoEstado } from "../components/ButtonAddOrganismos/ButtonAddOrganismos";
-import { DashboardEventos } from "../components/DashboardEventos/DashboardEventos";
 import { DashboardIncubadoras } from "../components/DashboardIncubadoras/DashboardIncubadoras";
 import {
   InternalPortalShell,
@@ -74,11 +73,6 @@ const HOME_MODULES: WritableHomeModuleConfig[] = [
         <ButtonAddOrganismoEstado canWrite={canWrite} />
       </>
     ),
-  },
-  {
-    key: "Eventos",
-    label: "Eventos",
-    render: () => <DashboardEventos />,
   },
   {
     key: "Incubadoras",
