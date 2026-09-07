@@ -25,6 +25,7 @@ export const userSlice = createSlice({
             token: payload.token,
             readonly: payload.readonly,
             canWrite: payload.canWrite,
+            isAnonymous: payload.isAnonymous,
            }
         },
         clearUser: (state) => {

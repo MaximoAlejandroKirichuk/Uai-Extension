@@ -5,6 +5,7 @@ import { useAuth } from "./useAuth";
 const dispatchMock = vi.fn();
 const navigateMock = vi.fn();
 const signInMock = vi.fn();
+const signInAnonymouslyMock = vi.fn();
 const setUserMock = vi.fn((payload: unknown) => ({ type: "user/setUser", payload }));
 
 vi.mock("react-redux", () => ({
@@ -17,6 +18,7 @@ vi.mock("react-router-dom", () => ({
 
 vi.mock("firebase/auth", () => ({
   signInWithEmailAndPassword: (...args: unknown[]) => signInMock(...args),
+  signInAnonymously: (...args: unknown[]) => signInAnonymouslyMock(...args),
 }));
 
 vi.mock("../firebase/firebaseConfig", () => ({
@@ -28,22 +30,37 @@ vi.mock("../store/slices/user/userSlice", () => ({
 }));
 
 const Harness = () => {
-  const { formData, loading, error, onSubmit, onInputChange } = useAuth();
+  const {
+    formData,
+    loading,
+    error,
+    guestLoading,
+    guestError,
+    onSubmit,
+    onGuestSignIn,
+    onInputChange,
+  } = useAuth();
 
   return (
-    <form onSubmit={onSubmit}>
-      <input aria-label="Email" name="email" value={formData.email} onChange={onInputChange} />
-      <input
-        aria-label="Password"
-        name="password"
-        value={formData.password}
-        onChange={onInputChange}
-      />
-      <button type="submit" disabled={loading}>
-        {loading ? "Ingresando..." : "Login"}
+    <>
+      <form onSubmit={onSubmit}>
+        <input aria-label="Email" name="email" value={formData.email} onChange={onInputChange} />
+        <input
+          aria-label="Password"
+          name="password"
+          value={formData.password}
+          onChange={onInputChange}
+        />
+        <button type="submit" disabled={loading || guestLoading}>
+          {loading ? "Ingresando..." : "Login"}
+        </button>
+        {error && <p role="alert">{error}</p>}
+      </form>
+      <button type="button" disabled={loading || guestLoading} onClick={onGuestSignIn}>
+        {guestLoading ? "Ingresando como invitado..." : "Continuar como invitado"}
       </button>
-      {error && <p role="alert">{error}</p>}
-    </form>
+      {guestError && <p role="alert">{guestError}</p>}
+    </>
   );
 };
 
@@ -52,6 +69,7 @@ describe("useAuth", () => {
     dispatchMock.mockReset();
     navigateMock.mockReset();
     signInMock.mockReset();
+    signInAnonymouslyMock.mockReset();
     setUserMock.mockClear();
   });
 
@@ -105,6 +123,7 @@ describe("useAuth", () => {
           localId: "uid-1",
           readonly: false,
           canWrite: true,
+          isAnonymous: false,
         },
       });
     });
@@ -164,6 +183,7 @@ describe("useAuth", () => {
           localId: "uid-readonly",
           readonly: true,
           canWrite: false,
+          isAnonymous: false,
         },
       });
     });
@@ -200,6 +220,7 @@ describe("useAuth", () => {
           localId: "uid-demo",
           readonly: true,
           canWrite: false,
+          isAnonymous: false,
         },
       });
     });
@@ -259,5 +280,99 @@ describe("useAuth", () => {
 
     expect(dispatchMock).not.toHaveBeenCalled();
     expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it("maps anonymous sign-in without an email to a read-only session", async () => {
+    signInAnonymouslyMock.mockResolvedValue({
+      user: {
+        email: null,
+        uid: "guest-uid",
+        isAnonymous: true,
+        getIdTokenResult: vi.fn().mockResolvedValue({
+          token: "guest-token",
+          claims: {},
+        }),
+      },
+    });
+
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /continuar como invitado/i }));
+
+    await waitFor(() => {
+      expect(dispatchMock).toHaveBeenCalledWith({
+        type: "user/setUser",
+        payload: {
+          emailUser: "",
+          token: "guest-token",
+          localId: "guest-uid",
+          readonly: true,
+          canWrite: false,
+          isAnonymous: true,
+        },
+      });
+    });
+    expect(signInAnonymouslyMock).toHaveBeenCalledWith({ key: "mock-auth" });
+    expect(navigateMock).toHaveBeenCalledWith("/Home");
+  });
+
+  it("surfaces an inline guest error when anonymous sign-in fails", async () => {
+    signInAnonymouslyMock.mockRejectedValue(new Error("anonymous auth disabled"));
+
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /continuar como invitado/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(/acceso invitado/i);
+    });
+
+    expect(dispatchMock).not.toHaveBeenCalled();
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it("ignores duplicate guest activations while anonymous sign-in is pending", async () => {
+    let resolveSignIn: ((value: unknown) => void) | undefined;
+    const pendingSignIn = new Promise((resolve) => {
+      resolveSignIn = resolve;
+    });
+
+    signInAnonymouslyMock.mockReturnValue(pendingSignIn);
+
+    render(<Harness />);
+
+    const guestButton = screen.getByRole("button", { name: /continuar como invitado/i });
+    fireEvent.click(guestButton);
+    fireEvent.click(guestButton);
+
+    expect(signInAnonymouslyMock).toHaveBeenCalledTimes(1);
+    expect(signInMock).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveSignIn?.({
+        user: {
+          email: null,
+          uid: "guest-uid",
+          isAnonymous: true,
+          getIdTokenResult: vi.fn().mockResolvedValue({
+            token: "guest-token",
+            claims: {},
+          }),
+        },
+      });
+      await pendingSignIn;
+    });
+  });
+
+  it("blocks credential submits while guest authentication is pending", () => {
+    signInAnonymouslyMock.mockReturnValue(new Promise(() => undefined));
+
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /continuar como invitado/i }));
+    fireEvent.submit(screen.getByRole("button", { name: /login/i }).closest("form") as HTMLFormElement);
+
+    expect(signInAnonymouslyMock).toHaveBeenCalledTimes(1);
+    expect(signInMock).not.toHaveBeenCalled();
   });
 });

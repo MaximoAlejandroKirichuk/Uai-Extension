@@ -4,4 +4,5 @@ export interface User{
     localId: string,
     readonly: boolean,
     canWrite: boolean,
+    isAnonymous?: boolean,
 }

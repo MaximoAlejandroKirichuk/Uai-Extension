@@ -116,5 +116,29 @@ describe("Home", () => {
 
     expect(screen.getByText(/panel de universidades readonly/i)).toBeInTheDocument();
     expect(screen.queryByText(/agregar universidad/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/^Acceso de solo lectura$/i)).toBeInTheDocument();
+  });
+
+  it("shows guest read-only context while preserving all module navigation", () => {
+    useAppSelectorMock.mockReturnValue({
+      emailUser: "",
+      token: "guest-token",
+      localId: "guest-uid",
+      readonly: true,
+      canWrite: false,
+      isAnonymous: true,
+    });
+
+    render(<Home />);
+
+    expect(screen.getByRole("region", { name: /contexto de acceso de solo lectura/i })).toBeInTheDocument();
+    expect(screen.getByText(/acceso invitado de solo lectura/i)).toBeInTheDocument();
+    expect(screen.getByText(/panel de universidades readonly/i)).toBeInTheDocument();
+    expect(screen.queryByText(/agregar universidad/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /financiamiento colectivo/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /capital de riesgo/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /plataformas/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /organismos estatales/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /incubadoras/i })).toBeInTheDocument();
   });
 });

@@ -3,7 +3,17 @@ import { useAuth } from "../../hooks/useAuth";
 
 export const Login = () => {
 
-  const { formData, loading, error, onSubmit, onInputChange } = useAuth();
+  const {
+    formData,
+    loading,
+    error,
+    guestLoading,
+    guestError,
+    onSubmit,
+    onGuestSignIn,
+    onInputChange,
+  } = useAuth();
+  const authPending = loading || guestLoading;
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -45,10 +55,27 @@ export const Login = () => {
 
           <Pressable
             type="submit"
-            disabled={loading}
+            disabled={authPending}
             label={loading ? "Ingresando..." : "Login"}
           />
         </form>
+
+        <div className="mt-6 border-t border-gray-200 pt-6">
+          <button
+            type="button"
+            onClick={onGuestSignIn}
+            disabled={authPending}
+            className="w-full rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 transition-colors hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {guestLoading ? "Ingresando como invitado..." : "Continuar como invitado"}
+          </button>
+          
+          {guestError && (
+            <p className="mt-3 text-sm text-red-600" role="alert">
+              {guestError}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   )

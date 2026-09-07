@@ -88,8 +88,9 @@ export const Home = () => {
   // Firebase custom claim is missing or stale.
   const user = useAppSelector((state: RootState) => state.user.value.user);
   const canWrite = user
-    ? resolveCanWrite(user.emailUser, user.readonly)
+    ? resolveCanWrite(user.emailUser, user.readonly, user.isAnonymous)
     : false;
+  const isReadOnlySession = !canWrite;
 
   const activeModule = HOME_MODULES.find((module) => module.key === active) ?? HOME_MODULES[0];
 
@@ -101,7 +102,22 @@ export const Home = () => {
         <ModuleNav modules={HOME_MODULES} activeKey={activeModule.key} onChange={setActive} />
       }
     >
-      <div className="space-y-6">{activeModule.render(canWrite)}</div>
+      <div className="space-y-6">
+        {isReadOnlySession ? (
+          <section
+            aria-label="Contexto de acceso de solo lectura"
+            className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+          >
+            <p className="font-semibold">
+              {user?.isAnonymous ? "Acceso invitado de solo lectura" : "Acceso de solo lectura"}
+            </p>
+            <p className="mt-1">
+              Podés consultar todos los módulos actuales, pero las acciones para crear, editar, eliminar, aprobar o subir datos están deshabilitadas.
+            </p>
+          </section>
+        ) : null}
+        {activeModule.render(canWrite)}
+      </div>
     </InternalPortalShell>
   );
 };

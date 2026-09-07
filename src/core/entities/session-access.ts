@@ -5,10 +5,12 @@ export const isReadonlyDemoEmail = (email: string | null | undefined): boolean =
 
 export const resolveReadonly = (
   email: string | null | undefined,
-  claimsReadonly: boolean
-): boolean => isReadonlyDemoEmail(email) || claimsReadonly;
+  claimsReadonly: boolean,
+  isAnonymous = false
+): boolean => isAnonymous || isReadonlyDemoEmail(email) || claimsReadonly;
 
 export const resolveCanWrite = (
   email: string | null | undefined,
-  claimsReadonly: boolean
-): boolean => !resolveReadonly(email, claimsReadonly);
+  claimsReadonly: boolean,
+  isAnonymous = false
+): boolean => !resolveReadonly(email, claimsReadonly, isAnonymous);
