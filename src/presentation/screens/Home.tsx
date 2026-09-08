@@ -10,6 +10,7 @@ import { ButtonAddPlataformas } from "../components/ButtonAddPlataformas/ButtonA
 import { DashboardOrganismos } from "../components/DashboardOrganismosEstados/DasboardOrganismosEstados";
 import { ButtonAddOrganismoEstado } from "../components/ButtonAddOrganismos/ButtonAddOrganismos";
 import { DashboardIncubadoras } from "../components/DashboardIncubadoras/DashboardIncubadoras";
+import { DashboardEventos } from "../components/DashboardEventos/DashboardEventos";
 import {
   InternalPortalShell,
   ModuleNav,
@@ -78,6 +79,11 @@ const HOME_MODULES: WritableHomeModuleConfig[] = [
     key: "Incubadoras",
     label: "Incubadoras",
     render: () => <DashboardIncubadoras />,
+  },
+  {
+    key: "eventos",
+    label: "Eventos",
+    render: () => <DashboardEventos />,
   },
 ];
 

@@ -59,6 +59,10 @@ vi.mock("../components/DashboardIncubadoras/DashboardIncubadoras", () => ({
   DashboardIncubadoras: () => <div>Panel de incubadoras</div>,
 }));
 
+vi.mock("../components/DashboardEventos/DashboardEventos", () => ({
+  DashboardEventos: () => <div>Panel de eventos module</div>,
+}));
+
 vi.mock("../../hooks/hooks", () => ({
   useAppSelector: (selector: unknown) => useAppSelectorMock(selector),
 }));
@@ -87,8 +91,8 @@ describe("Home", () => {
     expect(screen.getByText(/extensión uai/i)).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /módulos internos/i })).toBeInTheDocument();
     expect(screen.getAllByText(/^Módulo$/i).length).toBeGreaterThan(0);
-    expect(screen.queryByRole("button", { name: /eventos/i })).not.toBeInTheDocument();
-    expect(screen.queryByText(/panel de eventos/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /eventos/i })).toBeInTheDocument();
+    expect(screen.queryByText(/panel de eventos module/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Internal portal/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Select a module/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Module$/i)).not.toBeInTheDocument();
@@ -140,5 +144,16 @@ describe("Home", () => {
     expect(screen.getByRole("button", { name: /plataformas/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /organismos estatales/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /incubadoras/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /eventos/i })).toBeInTheDocument();
+  });
+
+  it("opens the read-only Events module without write controls", async () => {
+    const user = userEvent.setup();
+    render(<Home />);
+
+    await user.click(screen.getByRole("button", { name: /eventos/i }));
+
+    expect(screen.getByText("Panel de eventos module")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /create|edit|delete|approve/i })).not.toBeInTheDocument();
   });
 });
