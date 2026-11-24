@@ -54,13 +54,25 @@ export const DashboardCapitalVentures = ({ canWrite = true }: DashboardCapitalVe
     canWrite,
   });
 
+  // A fund loaded twice keeps the newer record; the older one stays in the
+  // database marked `reemplazado` so nothing is lost, and is hidden here.
+  const vigentes = useMemo(
+    () =>
+      (capitalVentures ?? []).filter(
+        (venture: CapitalVentures) => venture.estadoRevision !== "reemplazado"
+      ),
+    [capitalVentures]
+  );
+
   const filtrados = useMemo(() => {
     const busquedaNormalizada = busqueda.trim().toLowerCase();
 
-    return (capitalVentures ?? []).filter((venture: CapitalVentures) =>
-      busquedaNormalizada ? venture.nombre.toLowerCase().includes(busquedaNormalizada) : true
+    return vigentes.filter((venture: CapitalVentures) =>
+      busquedaNormalizada
+        ? (venture.nombre ?? "").toLowerCase().includes(busquedaNormalizada)
+        : true
     );
-  }, [busqueda, capitalVentures]);
+  }, [busqueda, vigentes]);
 
   const hasNoResults = !loading && !error && filtrados.length === 0;
 
@@ -71,7 +83,7 @@ export const DashboardCapitalVentures = ({ canWrite = true }: DashboardCapitalVe
         description="Revise el conjunto de datos de Capital Ventures actual, filtre por nombre y use la confirmación para las eliminaciones."
         actions={
           <div className="rounded-full border border-[color:var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[color:var(--color-text-muted)]">
-            {capitalVentures?.length ?? 0} registros
+            {vigentes.length} registros
           </div>
         }
       />

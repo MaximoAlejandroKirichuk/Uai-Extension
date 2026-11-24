@@ -1,5 +1,5 @@
-import { CapitalVentures } from "../../../../core/entities/capitalVentures.entity";
-import { DashboardItemCard } from "../../internal-shell";
+import type { CapitalVentures } from "../../../../core/entities/capitalVentures.entity";
+import { ArcapRecordCard } from "../../internal-shell";
 
 interface Props {
   venture: CapitalVentures;
@@ -10,44 +10,27 @@ interface Props {
 
 export const ItemCapitalVenture = ({ venture, id, onDelete, canDelete = true }: Props) => {
   return (
-    <DashboardItemCard
-      title={venture.nombre}
-      deleteLabel={`Eliminar ${venture.nombre}`}
-      onDelete={() => onDelete(id)}
+    <ArcapRecordCard
+      id={id}
+      record={venture}
+      onDelete={onDelete}
       canDelete={canDelete}
-    >
-      <p>{venture.comentario}</p>
-
-      {venture.contacto && (
-        <p>
-          <span className="font-semibold">Contacto:</span> {venture.contacto}
-        </p>
-      )}
-
-      <p>
-        <span className="font-semibold">Región:</span> {venture.region}
-      </p>
-      <p>
-        <span className="font-semibold">Tipo de inversión:</span> {venture.tipoInversion}
-      </p>
-      <p>
-        <span className="font-semibold">Foco:</span> {venture.foco}
-      </p>
-      <p>
-        <span className="font-semibold">Etapa:</span> {venture.etapa}
-      </p>
-      <p>
-        <span className="font-semibold">Monto promedio:</span> {venture.montoPromedio}
-      </p>
-      <p>
-        <span className="font-semibold">Perfil buscado:</span> {venture.perfilBuscado}
-      </p>
-      <p>
-        <span className="font-semibold">Convocatoria:</span> {venture.convocatoria}
-      </p>
-      <p>
-        <span className="font-semibold">Algoritmo:</span> {venture.algoritmo}
-      </p>
-    </DashboardItemCard>
+      lead={venture.comentario}
+      fields={[
+        { label: "Contacto", value: venture.contacto },
+        { label: "Region", value: venture.region },
+        { label: "Tipo de inversion", value: venture.tipoInversion },
+        { label: "Foco", value: venture.foco },
+        { label: "Etapa", value: venture.etapa },
+        { label: "Monto promedio", value: venture.montoPromedio },
+        { label: "Perfil buscado", value: venture.perfilBuscado },
+        { label: "Convocatoria", value: venture.convocatoria },
+        { label: "Empresa de respaldo", value: venture.empresaRespaldo },
+        { label: "Que busca para su negocio", value: venture.queBuscaParaSuNegocio },
+        { label: "Programas", value: venture.programas },
+        { label: "Algoritmo", value: venture.algoritmo },
+      ]}
+      lists={[{ label: "Portfolio declarado", items: venture.portfolio }]}
+    />
   );
 };

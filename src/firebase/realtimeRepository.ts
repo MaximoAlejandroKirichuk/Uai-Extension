@@ -8,7 +8,10 @@ export type RealtimePath =
   | "capitalVentures"
   | "plataformas"
   | "organismosEstado"
-  | "incubadoras";
+  | "incubadoras"
+  | "fondosPrivateEquity"
+  | "proveedoresServicios"
+  | "apoyoEmprendedor";
 
 export interface RealtimeSubscribeOptions<T> {
   path: RealtimePath | string;

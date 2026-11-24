@@ -6,6 +6,9 @@ import capitalVenturesReducer from './slices/capitalVentures/capitalVentures';
 import plataformasReducer from './slices/plataforma/plataforma';
 import organismosReducer  from './slices/organismosEstados/organismosEstados';
 import incubadorasReducer from './slices/incubadoras/incubadorasSlice';
+import fondosPrivateEquityReducer from './slices/fondosPrivateEquity/fondosPrivateEquitySlice';
+import proveedoresServiciosReducer from './slices/proveedoresServicios/proveedoresServiciosSlice';
+import apoyoEmprendedorReducer from './slices/apoyoEmprendedor/apoyoEmprendedorSlice';
 
 export const store = configureStore({
   reducer: {
@@ -15,7 +18,10 @@ export const store = configureStore({
     capitalVentures: capitalVenturesReducer,
     plataformas: plataformasReducer,
     organismos: organismosReducer,
-    incubadoras: incubadorasReducer
+    incubadoras: incubadorasReducer,
+    fondosPrivateEquity: fondosPrivateEquityReducer,
+    proveedoresServicios: proveedoresServiciosReducer,
+    apoyoEmprendedor: apoyoEmprendedorReducer,
   },
 })
 

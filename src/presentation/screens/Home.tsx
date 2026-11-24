@@ -11,6 +11,9 @@ import { DashboardOrganismos } from "../components/DashboardOrganismosEstados/Da
 import { ButtonAddOrganismoEstado } from "../components/ButtonAddOrganismos/ButtonAddOrganismos";
 import { DashboardIncubadoras } from "../components/DashboardIncubadoras/DashboardIncubadoras";
 import { DashboardEventos } from "../components/DashboardEventos/DashboardEventos";
+import { DashboardFondosPrivateEquity } from "../components/DashboardFondosPrivateEquity/DashboardFondosPrivateEquity";
+import { DashboardProveedoresServicios } from "../components/DashboardProveedoresServicios/DashboardProveedoresServicios";
+import { DashboardApoyoEmprendedor } from "../components/DashboardApoyoEmprendedor/DashboardApoyoEmprendedor";
 import {
   InternalPortalShell,
   ModuleNav,
@@ -74,6 +77,21 @@ const HOME_MODULES: WritableHomeModuleConfig[] = [
         <ButtonAddOrganismoEstado canWrite={canWrite} />
       </>
     ),
+  },
+  {
+    key: "fondosPrivateEquity",
+    label: "Private equity y otros vehiculos",
+    render: () => <DashboardFondosPrivateEquity />,
+  },
+  {
+    key: "apoyoEmprendedor",
+    label: "Apoyo al emprendedor",
+    render: () => <DashboardApoyoEmprendedor />,
+  },
+  {
+    key: "proveedoresServicios",
+    label: "Proveedores de servicios",
+    render: () => <DashboardProveedoresServicios />,
   },
   {
     key: "Incubadoras",
